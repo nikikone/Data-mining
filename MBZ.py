@@ -49,6 +49,7 @@ class MBZ:
             self.attributeNormalValues.append(np.random.randint(0, 2))
 
     def ClassGeneration(self, classSize):
+        RATIO = 1.2
         self.classSize = classSize
         self.classValues = []
         for numClass in range(classSize):
@@ -57,10 +58,36 @@ class MBZ:
                 rest = [0] * np.random.randint(LEFT_CHPD_CONSTANT, RIGHT_CHPD_CONSTANT + 1)
                 for numPD in range(len(rest)):
                     if type(self.attributePossibleValues[numAttribute]) is tuple:
-                        thisPD = np.random.randint(*self.attributePossibleValues[numAttribute], 2)
-                        thisPD = (np.min(thisPD), np.max(thisPD))
+                        checkDifference = False
+                        while True:
+                            thisPD = np.random.randint(*self.attributePossibleValues[numAttribute], 2)
+                            thisPD = (np.min(thisPD), np.max(thisPD))
+                            if numPD > 0 and not (rest[numPD - 1][1] < thisPD[0] or thisPD[1] < rest[numPD - 1][0]) :
+                                checkDifference = False
+                            else:
+                                checkDifference = True
+                            if checkDifference and (self.attributePossibleValues[numAttribute][1] - self.attributePossibleValues[numAttribute][0]) \
+                                 % (thisPD[1] - thisPD[0]) > RATIO:
+                                break
+                        rest[numPD] = thisPD
                         # Остановился здесь, планировал перегрузить оператор @ для работы с кортежами, но передумал
                         # Здась требуется создать значения для периодов так, чтобы соседние не пересекались
+                    elif type(self.attributePossibleValues[numAttribute]) is list:
+                        while True:
+                            shufflMas = np.array(self.attributePossibleValues[numAttribute])
+                            np.random.shuffle(shufflMas)
+                            num = np.random.randint(1, len(shufflMas) // 2 + 1)
+                            thisPD = shufflMas[:num].tolist()
+                            if numPD > 0 and len(np.intersect1d(thisPD, rest[numPD - 1])) == 0:
+                                break
+                            elif numPD == 0:
+                                break
+                        rest[numPD] = thisPD
+                    elif type(self.attributePossibleValues[numAttribute]) is int:
+                        if numPD == 0:
+                            rest[0] = np.random.randint(0, 2)
+                        else:
+                            rest[numPD] = 1 - rest[numPD - 1]
                 mas.append(rest)
             self.classValues.append(mas)
         
