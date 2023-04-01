@@ -21,6 +21,20 @@ MINIMUM_LENGTH_NUM = 60
         )
     ]
 ]
+# TODO Придумать другой вариант хранения данных МВД, т.к. текущий плох в плане повторения уже имеющихся данных
+# mvdValues
+[ # <- Классы (Заболевания)
+    [ # <- Признаки
+        ( # <- Значения признака в периодах динамики / (Нижняя граница, Верхняя граница) кол-ва длительности ПД
+            [ # <- Массив кортежей, списков или чисел
+    
+            ],
+            [ # < - Кортежи (Длительность ПД, Число МН)
+    
+            ]
+        )
+    ]
+]
 
 class MBZ:
     def __init__(self, attr, *, katStake=1, binStake=1, numSatke=1) -> None:
@@ -245,11 +259,14 @@ class MBZ:
         worksheet.set_column(column + 2, column + 2, 12)
 
         workbook.close()
+
+    def MVD(self):
+        pass
         
-a = MBZ(3)
-a.AttributeGeneration()
-a.ClassGeneration(1)
-#print(a.classValues)
-#print(a.attributePossibleValues)
+#a = MBZ(3)
+#a.AttributeGeneration()
+#a.ClassGeneration(1)
+##print(a.classValues)
+##print(a.attributePossibleValues)
 #a.ToExcel()
 #print(a.attributeNormalValues)
