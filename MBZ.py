@@ -1,38 +1,54 @@
 import numpy as np
 import xlsxwriter as xls
 
-SIZE_KATEGORIAL_CONSTANT = 10
-LEFT_NUM_CONSTANT = 0
-RIGHT_NUM_CONSTANT = 1000
+
+# Границы кол-ва ПД
 LEFT_CHPD_CONSTANT = 1
 RIGHT_CHPD_CONSTANT = 5
+
+# Границы моментов наблюдения
+LEFT_MN_CONSTANT = 1 # 
+RIGHT_MN_CONSTANT = 3 #
+
+# Границы возможных значений числовых признаков
+LEFT_NUM_CONSTANT = 0
+RIGHT_NUM_CONSTANT = 1000
+
+# Максимальное кол-во значений категориальных признаков
+SIZE_KATEGORIAL_CONSTANT = 10
+
+# Минимальное расстояние между левой и правой границами возможных значений признаков
 MINIMUM_LENGTH_NUM = 60
+
 
 # classValues
 [ # <- Классы (Заболевания)
     [ # <- Признаки
         ( # <- Значения признака в периодах динамики / (Нижняя граница, Верхняя граница) кол-ва моментов наблюдения
-            [ # <- Массив кортежей, списков или чисел
+            [ # <- Массив кортежей, списков или чисел, <- Значения признака в периодах динамики
+                [ # <- значения в ПД (tuple, list или int)
     
+                ]
             ],
             [ # < - Кортежи (НГ, ВГ)
+                [ # <- Значения в ПД
     
+                ]
             ]
         )
     ]
 ]
-# TODO Придумать другой вариант хранения данных МВД, т.к. текущий плох в плане повторения уже имеющихся данных
-# mvdValues
+
+# pdMnValues
 [ # <- Классы (Заболевания)
-    [ # <- Признаки
-        ( # <- Значения признака в периодах динамики / (Нижняя граница, Верхняя граница) кол-ва длительности ПД
-            [ # <- Массив кортежей, списков или чисел
+    [ # <- Истории болезни (ИБ)
+        [ # <- Признаки
+            [ # <- ПД
+                ( # <- Длительность и число МН
     
-            ],
-            [ # < - Кортежи (Длительность ПД, Число МН)
-    
+                )
             ]
-        )
+        ]
     ]
 ]
 
@@ -130,83 +146,83 @@ class MBZ:
                 mas.append((rest, upAndDownBorder))
             self.classValues.append(mas)
     
-    def ToExcel(self, *, path="data\\", name="MBZ.xlsx"):
-        workbook = xls.Workbook(path + name) # Создать файл
+    def ToExcelMBZ(self, workbook): # path="data\\", name="MBZ.xlsx"
+        Format = workbook.add_format({'align': 'center', 'valign': 'top', 'bg_color': '#FBD4B4', 'border': 1})
+        FormatBold = workbook.add_format({'align': 'center', 'valign': 'top', 'bg_color': '#FBD4B4', 'border': 1, 'bold': True})
         worksheet = workbook.add_worksheet('МБЗ') # Создать лист
-
         column = 0
-        worksheet.write(0, 0, "Заболевания")
+        worksheet.write(0, 0, "Заболевания", FormatBold)
         for row in range(1, self.classSize + 1):
-            worksheet.write(row, column, "Заболевание " + str(row))
+            worksheet.write(row, column, "Заболевание " + str(row), Format)
         worksheet.set_column(column, column, 15)
 
         column += 2
         worksheet.set_column(column - 1, column - 1, 0.75)
-        worksheet.write(0, column, "Признаки")
+        worksheet.write(0, column, "Признаки", FormatBold)
         for row in range(1, self.attributeSize + 1):
-            worksheet.write(row, column, "Признак " + str(row))
+            worksheet.write(row, column, "Признак " + str(row), Format)
         worksheet.set_column(column, column, 10)
 
         column += 2
         worksheet.set_column(column - 1, column - 1, 0.75)
-        worksheet.merge_range(0, column, 0, column + 1, "Возможные значения (ВЗ)")
+        worksheet.merge_range(0, column, 0, column + 1, "Возможные значения (ВЗ)", FormatBold)
         for row in range(1, self.attributeSize + 1):
-            worksheet.write(row, column, "Признак " + str(row))
+            worksheet.write(row, column, "Признак " + str(row), Format)
             if type(self.attributePossibleValues[row - 1]) is tuple:
                 left, right = self.attributePossibleValues[row - 1]
-                worksheet.write(row, column + 1, '[' + str(int(left)) + '-' + str(int(right)) + ']')
+                worksheet.write(row, column + 1, '[' + str(int(left)) + '-' + str(int(right)) + ']', Format)
             elif type(self.attributePossibleValues[row - 1]) is list:
                 listAttrRow = '{'
                 for i in range(len(self.attributePossibleValues[row - 1])):
                     listAttrRow += "значение " + str(i + 1) + ", "
                 listAttrRow = listAttrRow[:-2] + '}'
-                worksheet.write(row, column + 1, listAttrRow)
+                worksheet.write(row, column + 1, listAttrRow, Format)
             elif type(self.attributePossibleValues[row - 1]) is int:
-                worksheet.write(row, column + 1, "(0, 1)")
+                worksheet.write(row, column + 1, "(0, 1)", Format)
         worksheet.set_column(column, column, 12)
         worksheet.set_column(column + 1, column + 1, 12)
 
         column += 3
         worksheet.set_column(column - 1, column - 1, 0.75)
-        worksheet.merge_range(0, column, 0, column + 1, "Нормальные значения (НЗ)")
+        worksheet.merge_range(0, column, 0, column + 1, "Нормальные значения (НЗ)", FormatBold)
         for row in range(1, self.attributeSize + 1):
-            worksheet.write(row, column, "Признак " + str(row))
+            worksheet.write(row, column, "Признак " + str(row), Format)
             if type(self.attributeNormalValues[row - 1]) is tuple:
                 first, second = self.attributeNormalValues[row - 1]
-                worksheet.write(row, column + 1, '[' + str(int(first)) + '-' + str(int(second)) + ']')
+                worksheet.write(row, column + 1, '[' + str(int(first)) + '-' + str(int(second)) + ']', Format)
             elif type(self.attributeNormalValues[row - 1]) is list:
                 listAttrRow = '{'
                 for i in range(len(self.attributeNormalValues[row - 1])):
                     listAttrRow += "значение " + str(i + 1) + ", "
                 listAttrRow = listAttrRow[:-2] + '}'
-                worksheet.write(row, column + 1, listAttrRow)
+                worksheet.write(row, column + 1, listAttrRow, Format)
             elif type(self.attributeNormalValues[row - 1]) is int:
-                worksheet.write(row, column + 1, self.attributeNormalValues[row - 1])
+                worksheet.write(row, column + 1, self.attributeNormalValues[row - 1], Format)
         worksheet.set_column(column, column, 12)
         worksheet.set_column(column + 1, column + 1, 12)
 
         column += 3
         worksheet.set_column(column - 1, column - 1, 0.75)
-        worksheet.merge_range(0, column, 0, column + 1, "Клиническая картина (КК)")
+        worksheet.merge_range(0, column, 0, column + 1, "Клиническая картина (КК)", FormatBold)
         stepRow = 0
         for i in range(self.classSize):
-            worksheet.merge_range(1 + stepRow, column, stepRow + self.attributeSize, column, "Заболевание " + str(i + 1))
+            worksheet.merge_range(1 + stepRow, column, stepRow + self.attributeSize, column, "Заболевание " + str(i + 1), Format)
             for j in range(self.attributeSize):
-                worksheet.write(j + 1 + stepRow, column + 1, "Признак " + str(j + 1))
+                worksheet.write(j + 1 + stepRow, column + 1, "Признак " + str(j + 1), Format)
             stepRow += self.attributeSize
         worksheet.set_column(column, column, 15)
         worksheet.set_column(column + 1, column + 1, 14)
 
         column += 3
         worksheet.set_column(column - 1, column - 1, 0.75)
-        worksheet.merge_range(0, column, 0, column + 2, "Число периодов динамики (ЧПД)")
+        worksheet.merge_range(0, column, 0, column + 2, "Число периодов динамики (ЧПД)", FormatBold)
         iterRow = 0
         for classIter in range(self.classSize):
             for attrIter in range(self.attributeSize):
                 chPD = len(self.classValues[classIter][attrIter][0])
-                worksheet.write(1 + iterRow, column, "Заболевание " + str(classIter + 1))
-                worksheet.write(1 + iterRow, column + 1, "Признак " + str(attrIter + 1))
-                worksheet.write(1 + iterRow, column + 2, chPD)
+                worksheet.write(1 + iterRow, column, "Заболевание " + str(classIter + 1), Format)
+                worksheet.write(1 + iterRow, column + 1, "Признак " + str(attrIter + 1), Format)
+                worksheet.write(1 + iterRow, column + 2, chPD, Format)
                 iterRow += 1
         worksheet.set_column(column, column, 15)
         worksheet.set_column(column + 1, column + 1, 12)
@@ -214,15 +230,15 @@ class MBZ:
         
         column += 4
         worksheet.set_column(column - 1, column - 1, 0.75)
-        worksheet.merge_range(0, column, 0, column + 3, "Значение для периода (ЗДП)")
+        worksheet.merge_range(0, column, 0, column + 3, "Значение для периода (ЗДП)", FormatBold)
         iterRow = 0
         for classIter in range(self.classSize):
             for attrIter in range(self.attributeSize):
                 chPD = len(self.classValues[classIter][attrIter][0])
                 for PD in range(chPD):
-                    worksheet.write(1 + iterRow, column, "Заболевание " + str(classIter + 1))
-                    worksheet.write(1 + iterRow, column + 1, "Признак " + str(attrIter + 1))
-                    worksheet.write(1 + iterRow, column + 2, PD + 1)
+                    worksheet.write(1 + iterRow, column, "Заболевание " + str(classIter + 1), Format)
+                    worksheet.write(1 + iterRow, column + 1, "Признак " + str(attrIter + 1), Format)
+                    worksheet.write(1 + iterRow, column + 2, PD + 1, Format)
                     if type(self.attributeNormalValues[attrIter]) is tuple:
                         left, right = self.classValues[classIter][attrIter][0][PD]
                         outPutRow = '[' + str(int(left)) + '-' + str(int(right)) + ']'
@@ -233,7 +249,7 @@ class MBZ:
                         outPutRow = outPutRow[:-2]
                     elif type(self.attributeNormalValues[attrIter]) is int:
                         outPutRow = self.classValues[classIter][attrIter][0][PD]
-                    worksheet.write(1 + iterRow, column + 3, outPutRow)
+                    worksheet.write(1 + iterRow, column + 3, outPutRow, Format)
                     iterRow += 1
         worksheet.set_column(column, column, 15)
         worksheet.set_column(column + 1, column + 1, 12)
@@ -242,26 +258,123 @@ class MBZ:
 
         column += 5
         worksheet.set_column(column - 1, column - 1, 0.75)
-        worksheet.merge_range(0, column, 0, column + 3, "Верхние и нижние границы (ВГ и НГ)")
+        worksheet.merge_range(0, column, 0, column + 3, "Верхние и нижние границы (ВГ и НГ)", FormatBold)
         iterRow = 0
         for classIter in range(self.classSize):
             for attrIter in range(self.attributeSize):
                 chPD = len(self.classValues[classIter][attrIter][0])
                 for PD in range(chPD):
-                    worksheet.write(1 + iterRow, column, "Заболевание " + str(classIter + 1))
-                    worksheet.write(1 + iterRow, column + 1, "Признак " + str(attrIter + 1))
-                    worksheet.write(1 + iterRow, column + 2, self.classValues[classIter][attrIter][1][PD][1])
-                    worksheet.write(1 + iterRow, column + 3, self.classValues[classIter][attrIter][1][PD][0])
+                    worksheet.write(1 + iterRow, column, "Заболевание " + str(classIter + 1), Format)
+                    worksheet.write(1 + iterRow, column + 1, "Признак " + str(attrIter + 1), Format)
+                    worksheet.write(1 + iterRow, column + 2, self.classValues[classIter][attrIter][1][PD][1], Format)
+                    worksheet.write(1 + iterRow, column + 3, self.classValues[classIter][attrIter][1][PD][0], Format)
                     iterRow += 1
         worksheet.set_column(column, column, 15)
         worksheet.set_column(column + 1, column + 1, 12)
         worksheet.set_column(column + 2, column + 2, 12)
         worksheet.set_column(column + 2, column + 2, 12)
+        
 
-        workbook.close()
+    def MVD(self, IbSize):
+        self.IbSize = IbSize
+        pdMnValues = []
+        for classIter in range(self.classSize):
+            ibMass = []
+            for IbIter in range(self.IbSize):
+                attrMass = []
+                for attrIter in range(self.attributeSize):
+                    pdMass = []
+                    chPD = len(self.classValues[classIter][attrIter][0])
+                    for PD in range(chPD):
+                        downBorder, uppBorder = self.classValues[classIter][attrIter][1][PD]
+                        if downBorder == uppBorder:
+                            durationPD = downBorder
+                        else:
+                            durationPD = np.random.randint(downBorder, uppBorder + 1)
+                        if durationPD <= LEFT_MN_CONSTANT:
+                            chMN = durationPD
+                        else:
+                            chMN = np.random.randint(LEFT_MN_CONSTANT, min(RIGHT_MN_CONSTANT, durationPD) + 1)
+                        pdMass.append((durationPD, chMN))
+                    attrMass.append(pdMass)
+                ibMass.append(attrMass)
+            pdMnValues.append(ibMass)
+        self.pdMnValues = pdMnValues
 
-    def MVD(self):
-        pass
+
+    
+    def ToExcelMVD(self, workbook):
+        worksheet = workbook.add_worksheet('МВД')
+        Format = workbook.add_format({'align': 'center', 'valign': 'top', 'bg_color': '#FBD4B4', 'border': 1})
+        FormatBold = workbook.add_format({'align': 'center', 'valign': 'top', 'bg_color': '#FBD4B4', 'border': 1, 'bold': True})
+        column = 0
+        worksheet.merge_range(0, column, 0, column + 5, "(ИБ, заболевание, признак, номер ПД, длительность ПД, число МН в ПД)", FormatBold)
+        iterRow = 1
+        for classIter in range(self.classSize):
+            for IbIter in range(self.IbSize):
+                rowClassLen = 0
+                for attrIter in range(self.attributeSize):
+                    pdSize = len(self.pdMnValues[classIter][IbIter][attrIter])
+                    for PD in range(pdSize):
+                        durationPD, chMN = self.pdMnValues[classIter][IbIter][attrIter][PD]
+                        worksheet.write(iterRow, column + 3, PD + 1, Format)
+                        worksheet.write(iterRow, column + 4, durationPD, Format)
+                        worksheet.write(iterRow, column + 5, chMN, Format)
+                        iterRow += 1
+                    if pdSize != 1:
+                        worksheet.merge_range(iterRow - pdSize, column + 2, iterRow - 1, column + 2, "Признак " + str(attrIter + 1), Format)
+                    else:
+                        worksheet.write(iterRow - 1, column + 2, "Признак " + str(attrIter + 1), Format)
+                    rowClassLen += pdSize
+                worksheet.merge_range(iterRow - rowClassLen, column + 1, iterRow - 1, column + 1, "Заболевание " + str(classIter + 1), Format)
+                worksheet.merge_range(iterRow - rowClassLen, column, iterRow - 1, column, "ИБ " + str(IbIter + 1), Format)
+        
+        column += 7
+        iterRow = 1
+        worksheet.merge_range(0, column, 0, column + 4, "Выборка данных (ИБ, заболевание, признак, МН, значение в МН)", FormatBold)
+        for classIter in range(self.classSize):
+            for IbIter in range(self.IbSize):
+                rowClassLen = 0
+                for attrIter in range(self.attributeSize):
+                    rowAttrLen = 0
+                    pdSize = len(self.pdMnValues[classIter][IbIter][attrIter])
+                    summatorPD = 0
+                    for PD in range(pdSize):
+                        durationPD, chMN = self.pdMnValues[classIter][IbIter][attrIter][PD]
+                        leftDurationMN, rightDurationNM = 1, durationPD - chMN + 2 # Поменять на + 1, если ВГ не надо касаться ВГ
+                        rowAttrLen += chMN
+                        for MN in range(chMN):
+                            valueInPD = self.classValues[classIter][attrIter][0][PD]
+                            if type(valueInPD) is tuple:
+                                valueInMN = int(np.random.randint(*valueInPD))
+                                worksheet.write(iterRow, column + 4, valueInMN, Format)
+                            elif type(valueInPD) is list:
+                                indexValueKategorial = int(np.random.randint(0, len(valueInPD)))
+                                worksheet.write(iterRow, column + 4, "значение " + str(valueInPD[indexValueKategorial]), Format)
+                            elif type(valueInPD) is int:
+                                worksheet.write(iterRow, column + 4, valueInPD, Format)
+                            if leftDurationMN < rightDurationNM - 1:
+                                mn = int(np.random.randint(leftDurationMN, rightDurationNM))
+                            else:
+                                mn = leftDurationMN
+                            worksheet.write(iterRow, column + 3, mn + summatorPD, Format)
+                            leftDurationMN, rightDurationNM = mn + 1, rightDurationNM + 1
+                            iterRow += 1
+                        summatorPD += durationPD
+                    if rowAttrLen != 1:
+                            worksheet.merge_range(iterRow - rowAttrLen, column + 2, iterRow - 1, column + 2, "Признак " + str(attrIter + 1), Format)
+                    else:
+                        worksheet.write(iterRow - 1, column + 2, "Признак " + str(attrIter + 1), Format)
+                    rowClassLen += rowAttrLen
+                worksheet.merge_range(iterRow - rowClassLen, column + 1, iterRow - 1, column + 1, "Заболевание " + str(classIter + 1), Format)
+                worksheet.merge_range(iterRow - rowClassLen, column, iterRow - 1, column, "ИБ " + str(IbIter + 1), Format)
+        
+        worksheet.set_column(0, 11, 12)
+        worksheet.set_column(1, 1, 15)
+        worksheet.set_column(6, 6, 0.75)
+        worksheet.set_column(8, 8, 15)
+
+        
         
 #a = MBZ(3)
 #a.AttributeGeneration()

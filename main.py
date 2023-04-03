@@ -1,6 +1,13 @@
 from MBZ import *
+import xlsxwriter as xls
 
-a = MBZ(9)
+a = MBZ(3)
 a.AttributeGeneration()
 a.ClassGeneration(2)
-a.ToExcel()
+path="data\\"
+name="MBZ.xlsx"
+workbook = xls.Workbook(path + name) # Создать файл
+a.MVD(5)
+a.ToExcelMBZ(workbook)
+a.ToExcelMVD(workbook)
+workbook.close()
