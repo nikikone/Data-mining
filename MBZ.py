@@ -369,6 +369,7 @@ class MBZ:
                 worksheet.merge_range(iterRow - rowClassLen, column + 1, iterRow - 1, column + 1, "Заболевание " + str(classIter + 1), Format)
                 worksheet.merge_range(iterRow - rowClassLen, column, iterRow - 1, column, "ИБ " + str(IbIter + 1), Format)
         
+        # Ширина колонок
         worksheet.set_column(0, 11, 12)
         worksheet.set_column(1, 1, 15)
         worksheet.set_column(6, 6, 0.75)
