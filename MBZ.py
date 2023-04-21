@@ -324,7 +324,8 @@ class MBZ:
             pdMnValues.append(ibMass)
         self.pdMnValues = pdMnValues
 
-        ifbzTable = []
+
+        mvdTable = []
         for classIter in range(self.classSize):
             ibMass = []
             for IbIter in range(self.IbSize):
@@ -356,10 +357,18 @@ class MBZ:
                         pdMas.append(mnMas)
                     attrMas.append(pdMas)
                 ibMass.append(attrMas)
-            ifbzTable.append(ibMass)
-        self.ifbzTable = ifbzTable
+            mvdTable.append(ibMass)
+        self.mvdTable = mvdTable
         
-
+[
+	[
+		[
+			[(2, 427)], # <- значения в первом ПД
+			[(18, 148), (21, 90)] # <- значения во втором ПД
+		],
+		#... <- остальные классы 
+	]
+]
     
     def ToExcelMVD(self, workbook):
         worksheet = workbook.add_worksheet('МВД')
@@ -407,17 +416,17 @@ class MBZ:
                         for MN in range(chMN):
                             valueInPD = self.classValues[classIter][attrIter][0][PD]
                             if type(valueInPD) is tuple:
-                                valueInMN = self.ifbzTable[classIter][IbIter][attrIter][PD][MN][1]
+                                valueInMN = self.mvdTable[classIter][IbIter][attrIter][PD][MN][1]
                                 worksheet.write(iterRow, column + 4, valueInMN, Format)
                             elif type(valueInPD) is list:
-                                worksheet.write(iterRow, column + 4, "значение " + str(self.ifbzTable[classIter][IbIter][attrIter][PD][MN][1]), Format)
+                                worksheet.write(iterRow, column + 4, "значение " + str(self.mvdTable[classIter][IbIter][attrIter][PD][MN][1]), Format)
                             elif type(valueInPD) is int:
                                 worksheet.write(iterRow, column + 4, valueInPD, Format)
                             if leftDurationMN < rightDurationNM - 1:
-                                mn = self.ifbzTable[classIter][IbIter][attrIter][PD][MN][0]
+                                mn = self.mvdTable[classIter][IbIter][attrIter][PD][MN][0]
                             else:
                                 mn = leftDurationMN
-                            mn = self.ifbzTable[classIter][IbIter][attrIter][PD][MN][0]
+                            mn = self.mvdTable[classIter][IbIter][attrIter][PD][MN][0]
                             worksheet.write(iterRow, column + 3, mn, Format)
                             leftDurationMN, rightDurationNM = mn + 1, rightDurationNM + 1
                             iterRow += 1
