@@ -324,6 +324,41 @@ class MBZ:
             pdMnValues.append(ibMass)
         self.pdMnValues = pdMnValues
 
+        ifbzTable = []
+        for classIter in range(self.classSize):
+            ibMass = []
+            for IbIter in range(self.IbSize):
+                attrMas = []
+                for attrIter in range(self.attributeSize):
+                    pdSize = len(self.pdMnValues[classIter][IbIter][attrIter])
+                    pdMas = []
+                    summatorPD = 0
+                    for PD in range(pdSize):
+                        durationPD, chMN = self.pdMnValues[classIter][IbIter][attrIter][PD]
+                        leftDurationMN, rightDurationNM = 1, durationPD - chMN + 2 # Поменять на + 1, если ВГ не надо касаться НГ
+                        mnMas = []
+                        for MN in range(chMN):
+                            valueInPD = self.classValues[classIter][attrIter][0][PD]
+                            if type(valueInPD) is tuple:
+                                valueInMN = int(np.random.randint(*valueInPD))
+                            elif type(valueInPD) is list:
+                                indexValueKategorial = int(np.random.randint(0, len(valueInPD)))
+                                valueInMN = valueInPD[indexValueKategorial]
+                            elif type(valueInPD) is int:
+                                valueInMN = valueInPD
+                            if leftDurationMN < rightDurationNM - 1:
+                                mn = int(np.random.randint(leftDurationMN, rightDurationNM))
+                            else:
+                                mn = leftDurationMN
+                            mnMas.append((mn + summatorPD, valueInMN))
+                            leftDurationMN, rightDurationNM = mn + 1, rightDurationNM + 1
+                        summatorPD += durationPD
+                        pdMas.append(mnMas)
+                    attrMas.append(pdMas)
+                ibMass.append(attrMas)
+            ifbzTable.append(ibMass)
+        self.ifbzTable = ifbzTable
+        
 
     
     def ToExcelMVD(self, workbook):
@@ -367,23 +402,23 @@ class MBZ:
                     summatorPD = 0
                     for PD in range(pdSize):
                         durationPD, chMN = self.pdMnValues[classIter][IbIter][attrIter][PD]
-                        leftDurationMN, rightDurationNM = 1, durationPD - chMN + 2 # Поменять на + 1, если ВГ не надо касаться ВГ
+                        leftDurationMN, rightDurationNM = 1, durationPD - chMN + 2 # Поменять на + 1, если ВГ не надо касаться НГ
                         rowAttrLen += chMN
                         for MN in range(chMN):
                             valueInPD = self.classValues[classIter][attrIter][0][PD]
                             if type(valueInPD) is tuple:
-                                valueInMN = int(np.random.randint(*valueInPD))
+                                valueInMN = self.ifbzTable[classIter][IbIter][attrIter][PD][MN][1]
                                 worksheet.write(iterRow, column + 4, valueInMN, Format)
                             elif type(valueInPD) is list:
-                                indexValueKategorial = int(np.random.randint(0, len(valueInPD)))
-                                worksheet.write(iterRow, column + 4, "значение " + str(valueInPD[indexValueKategorial]), Format)
+                                worksheet.write(iterRow, column + 4, "значение " + str(self.ifbzTable[classIter][IbIter][attrIter][PD][MN][1]), Format)
                             elif type(valueInPD) is int:
                                 worksheet.write(iterRow, column + 4, valueInPD, Format)
                             if leftDurationMN < rightDurationNM - 1:
-                                mn = int(np.random.randint(leftDurationMN, rightDurationNM))
+                                mn = self.ifbzTable[classIter][IbIter][attrIter][PD][MN][0]
                             else:
                                 mn = leftDurationMN
-                            worksheet.write(iterRow, column + 3, mn + summatorPD, Format)
+                            mn = self.ifbzTable[classIter][IbIter][attrIter][PD][MN][0]
+                            worksheet.write(iterRow, column + 3, mn, Format)
                             leftDurationMN, rightDurationNM = mn + 1, rightDurationNM + 1
                             iterRow += 1
                         summatorPD += durationPD
