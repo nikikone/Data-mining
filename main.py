@@ -10,4 +10,6 @@ workbook = xls.Workbook(path + name) # Создать файл
 a.MVD(5)
 a.ToExcelMBZ(workbook)
 a.ToExcelMVD(workbook)
+a.IfbzBorderDelimiter()
+
 workbook.close()

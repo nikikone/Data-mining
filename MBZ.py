@@ -1,6 +1,6 @@
 import numpy as np
 import xlsxwriter as xls
-
+import itertools
 
 # Границы кол-ва ПД
 LEFT_CHPD_CONSTANT = 1
@@ -47,11 +47,24 @@ MINIMUM_LENGTH_NUM = 60
             [ # <- ПД
                 ( # <- Длительность и число МН
     
-                )
-            ]
-        ]
-    ]
+                ),
+            ],
+        ],
+    ],
 ]
+
+# mvdTable
+[ # <- Классы (Заболевания)
+	[ # <- Истории болезней 
+		[ # <- Признаки
+			[ # <- Момент наблюдения 
+				( # <- Значения (МН, значение в МН)
+    
+                ),
+			],
+		],
+	],
+]  
 
 class MBZ:
     def __init__(self, attr, *, katStake=1, binStake=1, numSatke=1) -> None:
@@ -337,7 +350,6 @@ class MBZ:
                     for PD in range(pdSize):
                         durationPD, chMN = self.pdMnValues[classIter][IbIter][attrIter][PD]
                         leftDurationMN, rightDurationNM = 1, durationPD - chMN + 2 # Поменять на + 1, если ВГ не надо касаться НГ
-                        mnMas = []
                         for MN in range(chMN):
                             valueInPD = self.classValues[classIter][attrIter][0][PD]
                             if type(valueInPD) is tuple:
@@ -351,24 +363,14 @@ class MBZ:
                                 mn = int(np.random.randint(leftDurationMN, rightDurationNM))
                             else:
                                 mn = leftDurationMN
-                            mnMas.append((mn + summatorPD, valueInMN))
+                            pdMas.append((mn + summatorPD, valueInMN))
                             leftDurationMN, rightDurationNM = mn + 1, rightDurationNM + 1
                         summatorPD += durationPD
-                        pdMas.append(mnMas)
                     attrMas.append(pdMas)
                 ibMass.append(attrMas)
             mvdTable.append(ibMass)
         self.mvdTable = mvdTable
-        
-[
-	[
-		[
-			[(2, 427)], # <- значения в первом ПД
-			[(18, 148), (21, 90)] # <- значения во втором ПД
-		],
-		#... <- остальные классы 
-	]
-]
+
     
     def ToExcelMVD(self, workbook):
         worksheet = workbook.add_worksheet('МВД')
@@ -408,29 +410,23 @@ class MBZ:
                 for attrIter in range(self.attributeSize):
                     rowAttrLen = 0
                     pdSize = len(self.pdMnValues[classIter][IbIter][attrIter])
-                    summatorPD = 0
+                    mnIter = 0
                     for PD in range(pdSize):
-                        durationPD, chMN = self.pdMnValues[classIter][IbIter][attrIter][PD]
-                        leftDurationMN, rightDurationNM = 1, durationPD - chMN + 2 # Поменять на + 1, если ВГ не надо касаться НГ
+                        chMN = self.pdMnValues[classIter][IbIter][attrIter][PD][1]
                         rowAttrLen += chMN
                         for MN in range(chMN):
                             valueInPD = self.classValues[classIter][attrIter][0][PD]
                             if type(valueInPD) is tuple:
-                                valueInMN = self.mvdTable[classIter][IbIter][attrIter][PD][MN][1]
+                                valueInMN = self.mvdTable[classIter][IbIter][attrIter][mnIter][1]
                                 worksheet.write(iterRow, column + 4, valueInMN, Format)
                             elif type(valueInPD) is list:
-                                worksheet.write(iterRow, column + 4, "значение " + str(self.mvdTable[classIter][IbIter][attrIter][PD][MN][1]), Format)
+                                worksheet.write(iterRow, column + 4, "значение " + str(self.mvdTable[classIter][IbIter][attrIter][mnIter][1]), Format)
                             elif type(valueInPD) is int:
                                 worksheet.write(iterRow, column + 4, valueInPD, Format)
-                            if leftDurationMN < rightDurationNM - 1:
-                                mn = self.mvdTable[classIter][IbIter][attrIter][PD][MN][0]
-                            else:
-                                mn = leftDurationMN
-                            mn = self.mvdTable[classIter][IbIter][attrIter][PD][MN][0]
+                            mn = self.mvdTable[classIter][IbIter][attrIter][mnIter][0]
                             worksheet.write(iterRow, column + 3, mn, Format)
-                            leftDurationMN, rightDurationNM = mn + 1, rightDurationNM + 1
+                            mnIter += 1
                             iterRow += 1
-                        summatorPD += durationPD
                     if rowAttrLen != 1:
                             worksheet.merge_range(iterRow - rowAttrLen, column + 2, iterRow - 1, column + 2, "Признак " + str(attrIter + 1), Format)
                     else:
@@ -445,6 +441,54 @@ class MBZ:
         worksheet.set_column(1, 1, 15)
         worksheet.set_column(6, 6, 0.75)
         worksheet.set_column(8, 8, 15)
+
+    def IfbzBorderDelimiter(self): # Работает некорректно, создаёт пустые списки, стоит провеить
+        ifbzTableAttr = []
+        for classIter in range(self.classSize):
+            ibMass = []
+            for IbIter in range(self.IbSize):
+                attrMass = []
+                for attrIter in range(self.attributeSize):
+                    pdMass = []
+                    masPD = self.mvdTable[classIter][IbIter][attrIter]
+                    npMasPD = np.array(masPD)
+                    masK = [i for i in range(len(masPD))]
+                    masProv = npMasPD[:, 1]
+                    result = []
+                    for numOfPd in range(1, len(masPD)):
+                        a = itertools.combinations(masK, numOfPd)
+                        for i in a:
+                            flag = True
+                            resOut = []
+                            if numOfPd >= 1:
+                                left = 0
+                                right = len(masPD)
+                                for iterPD in range(1, len(i)):
+                                    if iterPD == 1:
+                                        left = 0
+                                    else:
+                                        left = i[iterPD - 1]
+                                    if iterPD == len(i) - 1:
+                                        right = len(masPD)
+                                    else:
+                                        right = i[iterPD + 1]
+                                    mas_1 = set(masProv[left:i[iterPD]])
+                                    mas_2 = set(masProv[i[iterPD]:right])
+                                    string = "[" + str(npMasPD[i[iterPD] - 1, 0]) + ", " + str(npMasPD[i[iterPD], 0]) + ")"
+                                    resOut.append(string)
+                                    if not mas_1.isdisjoint(mas_2):
+                                        flag = False
+                                        break
+                            if flag and resOut not in result:
+                                result.append(resOut)
+                        pdMass.append(result)
+                    attrMass.append(pdMass)
+                ibMass.append(attrMass)
+            ifbzTableAttr.append(ibMass)
+        self.ifbzTableAttr = ifbzTableAttr
+
+        print(self.ifbzTableAttr[0][0][1])
+
 
         
         
