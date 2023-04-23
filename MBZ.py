@@ -455,12 +455,14 @@ class MBZ:
                     masK = [i for i in range(len(masPD))]
                     masProv = npMasPD[:, 1]
                     result = []
-                    for numOfPd in range(1, len(masPD)):
+                    for numOfPd in range(1, len(masPD) + 1):
                         a = itertools.combinations(masK, numOfPd)
                         for i in a:
                             flag = True
                             resOut = []
-                            if numOfPd >= 1:
+                            if numOfPd == 1:
+                                resOut.append(masPD[-1][0])
+                            elif numOfPd >= 2:
                                 left = 0
                                 right = len(masPD)
                                 for iterPD in range(1, len(i)):
@@ -488,7 +490,7 @@ class MBZ:
         self.ifbzTableAttr = ifbzTableAttr
 
         print(self.ifbzTableAttr[0][0][1])
-
+        print(self.mvdTable[0][0][1])
 
         
         
