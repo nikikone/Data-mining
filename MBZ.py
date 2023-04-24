@@ -444,24 +444,31 @@ class MBZ:
 
     def IfbzBorderDelimiter(self): # Работает некорректно, создаёт пустые списки, стоит провеить
         ifbzTableAttr = []
+        ifbzTableAttrValue = []
         for classIter in range(self.classSize):
             ibMass = []
+            ibMassValue = []
             for IbIter in range(self.IbSize):
                 attrMass = []
+                attrMassValue = []
                 for attrIter in range(self.attributeSize):
-                    pdMass = []
                     masPD = self.mvdTable[classIter][IbIter][attrIter]
                     npMasPD = np.array(masPD)
                     masK = [i for i in range(len(masPD))]
                     masProv = npMasPD[:, 1]
                     result = []
+                    resultValue = []
                     for numOfPd in range(1, len(masPD) + 1):
+                        pdMass = []
+                        pdMassValue = []
                         a = itertools.combinations(masK, numOfPd)
                         for i in a:
                             flag = True
                             resOut = []
+                            resOutValue = []
                             if numOfPd == 1:
                                 resOut.append(masPD[-1][0])
+                                resOutValue.append(set(masProv))
                             elif numOfPd >= 2:
                                 left = 0
                                 right = len(masPD)
@@ -476,21 +483,39 @@ class MBZ:
                                         right = i[iterPD + 1]
                                     mas_1 = set(masProv[left:i[iterPD]])
                                     mas_2 = set(masProv[i[iterPD]:right])
-                                    string = "[" + str(npMasPD[i[iterPD] - 1, 0]) + ", " + str(npMasPD[i[iterPD], 0]) + ")"
-                                    resOut.append(string)
+                                    #res = "[" + str(npMasPD[i[iterPD] - 1, 0]) + ", " + str(npMasPD[i[iterPD], 0]) + ")"
+                                    res = (npMasPD[i[iterPD] - 1, 0], npMasPD[i[iterPD], 0])
+                                    resOut.append(res)
+                                    resOutValue.append(mas_1)
+                                    if iterPD == len(i) - 1:
+                                        resOutValue.append(mas_2)
                                     if not mas_1.isdisjoint(mas_2):
                                         flag = False
                                         break
                             if flag and resOut not in result:
+                                if attrIter == 1 and classIter == 0 and IbIter == 0:
+                                    print("---", resOut)
+                                resultValue.append(resOutValue)
                                 result.append(resOut)
+                        pdMassValue.append(resultValue)
                         pdMass.append(result)
-                    attrMass.append(pdMass)
+                    attrMassValue.extend(pdMassValue)
+                    attrMass.extend(pdMass)
+                ibMassValue.append(attrMassValue)
                 ibMass.append(attrMass)
+            ifbzTableAttrValue.append(ibMassValue)
             ifbzTableAttr.append(ibMass)
+        self.ifbzTableAttrValue = ifbzTableAttrValue
         self.ifbzTableAttr = ifbzTableAttr
 
-        print(self.ifbzTableAttr[0][0][1])
-        print(self.mvdTable[0][0][1])
+        for i in range(self.IbSize):
+            print("--"*20)
+            print(self.ifbzTableAttr[0][i][1])
+            print("--"*20)
+            print(self.ifbzTableAttrValue[0][i][1])
+            print("--"*20)
+            print(self.mvdTable[0][i][1])
+            print()
 
         
         
