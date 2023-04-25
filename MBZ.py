@@ -444,13 +444,16 @@ class MBZ:
 
     def IfbzBorderDelimiter(self): # Работает некорректно, создаёт пустые списки, стоит провеить
         ifbzTableAttr = []
-        ifbzTableAttrValue = []
+        ifbzTableValue = []
+        ifbzTableVGNG = []
         for classIter in range(self.classSize):
             ibMass = []
             ibMassValue = []
+            ibMassVGNG = []
             for IbIter in range(self.IbSize):
                 attrMass = []
                 attrMassValue = []
+                attrMassVGNG = []
                 for attrIter in range(self.attributeSize):
                     masPD = self.mvdTable[classIter][IbIter][attrIter]
                     npMasPD = np.array(masPD)
@@ -458,29 +461,48 @@ class MBZ:
                     masProv = npMasPD[:, 1]
                     result = []
                     resultValue = []
+                    resultVGNG = []
                     for numOfPd in range(1, len(masPD) + 1):
                         pdMass = []
                         pdMassValue = []
+                        pdMassVGNG = []
                         a = itertools.combinations(masK, numOfPd)
                         for i in a:
                             flag = True
                             resOut = []
                             resOutValue = []
+                            resOutVGNG = []
                             if numOfPd == 1:
                                 resOut.append(masPD[-1][0])
                                 resOutValue.append(set(masProv))
+                                resOutVGNG.append((masPD[-1][0], masPD[-1][0]))
                             elif numOfPd >= 2:
                                 left = 0
                                 right = len(masPD)
+                                lastMN = 0
                                 for iterPD in range(1, len(i)):
                                     if iterPD == 1:
                                         left = 0
                                     else:
                                         left = i[iterPD - 1]
+                                    
                                     if iterPD == len(i) - 1:
                                         right = len(masPD)
                                     else:
                                         right = i[iterPD + 1]
+
+                                    if iterPD == len(i) - 1:
+                                        resOutVGNG.append((npMasPD[i[iterPD], 0] - lastMN - 1, npMasPD[i[iterPD], 0] - lastMN - 1))
+                                        lastMN = npMasPD[i[iterPD], 0] - 1
+                                        resOutVGNG.append((masPD[-1][0] - lastMN, masPD[-1][0] - lastMN))
+                                    else:
+                                        if iterPD == 1:
+                                            resOutVGNG.append((npMasPD[i[iterPD], 0] - 1, npMasPD[i[iterPD], 0] - 1))
+                                            lastMN = npMasPD[i[iterPD], 0] - 1
+                                        else:
+                                            resOutVGNG.append((npMasPD[i[iterPD], 0] - 1 - lastMN, npMasPD[i[iterPD], 0] - 1 - lastMN))
+                                            lastMN = npMasPD[i[iterPD], 0] - 1
+
                                     mas_1 = set(masProv[left:i[iterPD]])
                                     mas_2 = set(masProv[i[iterPD]:right])
                                     #res = "[" + str(npMasPD[i[iterPD] - 1, 0]) + ", " + str(npMasPD[i[iterPD], 0]) + ")"
@@ -489,34 +511,57 @@ class MBZ:
                                     resOutValue.append(mas_1)
                                     if iterPD == len(i) - 1:
                                         resOutValue.append(mas_2)
+                                    
                                     if not mas_1.isdisjoint(mas_2):
                                         flag = False
                                         break
-                            if flag and resOut not in result:
+                            if flag and (resOut not in result):
                                 if attrIter == 1 and classIter == 0 and IbIter == 0:
                                     print("---", resOut)
                                 resultValue.append(resOutValue)
                                 result.append(resOut)
+                                resultVGNG.append(resOutVGNG)
                         pdMassValue.append(resultValue)
                         pdMass.append(result)
+                        pdMassVGNG.append(resultVGNG)
                     attrMassValue.extend(pdMassValue)
                     attrMass.extend(pdMass)
+                    attrMassVGNG.extend(pdMassVGNG)
                 ibMassValue.append(attrMassValue)
                 ibMass.append(attrMass)
-            ifbzTableAttrValue.append(ibMassValue)
+                ibMassVGNG.append(attrMassVGNG)
+            ifbzTableValue.append(ibMassValue)
             ifbzTableAttr.append(ibMass)
-        self.ifbzTableAttrValue = ifbzTableAttrValue
+            ifbzTableVGNG.append(ibMassVGNG)
+        self.ifbzTableValue = ifbzTableValue
         self.ifbzTableAttr = ifbzTableAttr
+        self.ifbzTableVGNG = ifbzTableVGNG
 
         for i in range(self.IbSize):
-            print("--"*20)
+            print("--"*20, "Периоды")
             print(self.ifbzTableAttr[0][i][1])
-            print("--"*20)
-            print(self.ifbzTableAttrValue[0][i][1])
-            print("--"*20)
+            print("--"*20, "ЗДП")
+            print(self.ifbzTableValue[0][i][1])
+            print("--"*20, "Длительность периода")
+            print(self.ifbzTableVGNG[0][i][1])
+            print("--"*20, "Моменты наблюдения")
             print(self.mvdTable[0][i][1])
             print()
 
+    def IfbzBorderSummator(self):
+        for classIter in range(self.classSize):
+            for attrIter in range(self.attributeSize):
+                attrMass = []
+                for IbIter in range(self.IbSize): # Как вариант можно для ПД = 1 провести операцию вне цикла PdNum, просто объединив границы и значения множеств
+                                                  # а для ПД > 1 сделать проверку на получившиеся объединённые множества, пропустив их через новую функцию
+                                                  # проверки таковых, но для этого нужно вынести её из функции ifbzBorderDelimiter
+                                                  #
+                                                  # Есть ещё один вариант - Это внаглую объеденить все множества по их номеру ИБ и уже потом, в отдельном цикле
+                                                  # проверить на правильность объединения (но тогда массивы раздуются из-за того что некоторые ИБ имеют по
+                                                  # несколько ЧПД одинакового размера) 
+                    for PdNum in range(len(self.ifbzTableValue)):
+
+                        pass
         
         
 #a = MBZ(3)
