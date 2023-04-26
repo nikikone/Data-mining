@@ -521,6 +521,7 @@ class MBZ:
                                 resultValue.append(resOutValue)
                                 result.append(resOut)
                                 resultVGNG.append(resOutVGNG)
+                        
                         pdMassValue.append(resultValue)
                         pdMass.append(result)
                         pdMassVGNG.append(resultVGNG)
@@ -550,18 +551,35 @@ class MBZ:
 
     def IfbzBorderSummator(self):
         for classIter in range(self.classSize):
-            for attrIter in range(self.attributeSize):
+            #classMass = []
+            for attrIter in range(1, 2):
                 attrMass = []
-                for IbIter in range(self.IbSize): # Как вариант можно для ПД = 1 провести операцию вне цикла PdNum, просто объединив границы и значения множеств
+                for IbIter in range(0, self.IbSize): # Как вариант можно для ПД = 1 провести операцию вне цикла PdNum, просто объединив границы и значения множеств
                                                   # а для ПД > 1 сделать проверку на получившиеся объединённые множества, пропустив их через новую функцию
                                                   # проверки таковых, но для этого нужно вынести её из функции ifbzBorderDelimiter
                                                   #
                                                   # Есть ещё один вариант - Это внаглую объеденить все множества по их номеру ИБ и уже потом, в отдельном цикле
                                                   # проверить на правильность объединения (но тогда массивы раздуются из-за того что некоторые ИБ имеют по
-                                                  # несколько ЧПД одинакового размера) 
-                    for PdNum in range(len(self.ifbzTableValue)):
+                                                  # несколько ЧПД одинакового размера)
+                    testMas = {i: [] for i in range(1, len(self.ifbzTableValue[classIter][IbIter][attrIter][-1]) + 1)}
+                    for PdNum in range(len(self.ifbzTableValue[classIter][IbIter][attrIter])):
+                        testMas[len(self.ifbzTableValue[classIter][IbIter][attrIter][PdNum])].append(self.ifbzTableValue[classIter][IbIter][attrIter][PdNum])
+                    if IbIter == 0:
+                        attrMass = testMas
+                    else:
+                        zatychkaMas = {i: [] for i in range(1, min(len(attrMass), len(testMas)) + 1)}
+                        for PdNum in range(1, min(len(attrMass), len(testMas)) + 1):
+                            if len(attrMass[PdNum]) == 0 or len(testMas[PdNum]) == 0:
+                                continue
+                            # Вот здесь начинаются свистоперделки с объединением и проверкой на пересечения получившихся множеств
+                            for i in range(len(attrMass[PdNum])):
+                                for j in range(len(testMas[PdNum])):
+                                    pass # Вот сюда
+                            
 
-                        pass
+                    #for i in range(1, len(self.ifbzTableValue[classIter][IbIter][attrIter][-1])):
+                    #    print(testMas[i])
+                    #print()
         
         
 #a = MBZ(3)

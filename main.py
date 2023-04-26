@@ -11,5 +11,5 @@ a.MVD(5)
 a.ToExcelMBZ(workbook)
 a.ToExcelMVD(workbook)
 a.IfbzBorderDelimiter()
-
+a.IfbzBorderSummator()
 workbook.close()
