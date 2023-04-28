@@ -5,12 +5,12 @@ import itertools
 RATIO = 1.2
 
 # Границы кол-ва ПД
-LEFT_CHPD_CONSTANT = 1
+LEFT_CHPD_CONSTANT = 3
 RIGHT_CHPD_CONSTANT = 5
 
 # Границы моментов наблюдения
 LEFT_MN_CONSTANT = 1 # 
-RIGHT_MN_CONSTANT = 3 #
+RIGHT_MN_CONSTANT = 10 #
 
 # Границы возможных значений числовых признаков
 LEFT_NUM_CONSTANT = 0
@@ -125,7 +125,7 @@ class DataMining:
                 rest = [0] * np.random.randint(LEFT_CHPD_CONSTANT, RIGHT_CHPD_CONSTANT + 1)
                 upAndDownBorder = [0] * len(rest)
                 for numPD in range(len(rest)):
-                    upAndDownBorder[numPD] = np.random.randint(1, 25, 2)
+                    upAndDownBorder[numPD] = np.random.randint(1, 25, 2) # -----
                     upAndDownBorder[numPD] = (np.min(upAndDownBorder[numPD]), np.max(upAndDownBorder[numPD]))
                     if type(self.attributePossibleValues[numAttribute]) is tuple:
                         checkDifference = False
@@ -140,7 +140,6 @@ class DataMining:
                                  % (thisPD[1] - thisPD[0]) > RATIO:
                                 break
                         rest[numPD] = thisPD
-                        # Здась требуется создать значения для периодов так, чтобы соседние не пересекались
                     elif type(self.attributePossibleValues[numAttribute]) is list:
                         while True:
                             shufflMas = np.array(self.attributePossibleValues[numAttribute])
