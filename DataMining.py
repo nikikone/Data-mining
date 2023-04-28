@@ -2,6 +2,8 @@ import numpy as np
 import xlsxwriter as xls
 import itertools
 
+RATIO = 1.2
+
 # Границы кол-ва ПД
 LEFT_CHPD_CONSTANT = 1
 RIGHT_CHPD_CONSTANT = 5
@@ -66,7 +68,7 @@ MINIMUM_LENGTH_NUM = 60
 	],
 ]  
 
-class MBZ:
+class DataMining:
     def __init__(self, attr, *, katStake=1, binStake=1, numSatke=1) -> None:
         self.attributeSize = attr
         self.katStake = katStake
@@ -115,7 +117,6 @@ class MBZ:
             self.attributeNormalValues.append(np.random.randint(0, 2))
 
     def ClassGeneration(self, classSize):
-        RATIO = 1.2
         self.classSize = classSize
         self.classValues = []
         for numClass in range(classSize):
@@ -139,7 +140,6 @@ class MBZ:
                                  % (thisPD[1] - thisPD[0]) > RATIO:
                                 break
                         rest[numPD] = thisPD
-                        # Остановился здесь, планировал перегрузить оператор @ для работы с кортежами, но передумал
                         # Здась требуется создать значения для периодов так, чтобы соседние не пересекались
                     elif type(self.attributePossibleValues[numAttribute]) is list:
                         while True:
@@ -442,7 +442,7 @@ class MBZ:
         worksheet.set_column(6, 6, 0.75)
         worksheet.set_column(8, 8, 15)
 
-    def IfbzBorderDelimiter(self): # Работает некорректно, создаёт пустые списки, стоит провеить
+    def IfbzBorderDelimiter(self):
         ifbzTableAttr = []
         ifbzTableValue = []
         ifbzTableVGNG = []
@@ -549,11 +549,24 @@ class MBZ:
             print(self.mvdTable[0][i][1])
             print()
 
+    @staticmethod
+    def CheckBorderDelimiterTruth(massOfCheck):
+        flag = True
+        numOfPd = len(massOfCheck)
+        if numOfPd >= 2:
+            for iterPD in range(1, len(massOfCheck)):
+                mas_1 = massOfCheck[iterPD - 1]
+                mas_2 = massOfCheck[iterPD]
+                if not mas_1.isdisjoint(mas_2):
+                    flag = False
+                    break
+        return flag
+
     def IfbzBorderSummator(self):
         for classIter in range(self.classSize):
             #classMass = []
-            for attrIter in range(1, 2):
-                attrMass = []
+            for attrIter in range(1, 2): #(1, 2)
+                attrUnion = []
                 for IbIter in range(0, self.IbSize): # Как вариант можно для ПД = 1 провести операцию вне цикла PdNum, просто объединив границы и значения множеств
                                                   # а для ПД > 1 сделать проверку на получившиеся объединённые множества, пропустив их через новую функцию
                                                   # проверки таковых, но для этого нужно вынести её из функции ifbzBorderDelimiter
@@ -565,21 +578,34 @@ class MBZ:
                     for PdNum in range(len(self.ifbzTableValue[classIter][IbIter][attrIter])):
                         testMas[len(self.ifbzTableValue[classIter][IbIter][attrIter][PdNum])].append(self.ifbzTableValue[classIter][IbIter][attrIter][PdNum])
                     if IbIter == 0:
-                        attrMass = testMas
+                        attrUnion = testMas
+                        #print(testMas)
                     else:
-                        zatychkaMas = {i: [] for i in range(1, min(len(attrMass), len(testMas)) + 1)}
-                        for PdNum in range(1, min(len(attrMass), len(testMas)) + 1):
-                            if len(attrMass[PdNum]) == 0 or len(testMas[PdNum]) == 0:
+                        #zatychkaMas = {i: [] for i in range(1, min(len(attrUnion), len(testMas)) + 1)}
+                        for PdNum in range(1, min(len(attrUnion), len(testMas)) + 1):
+                            if len(attrUnion[PdNum]) == 0 or len(testMas[PdNum]) == 0:
                                 continue
                             # Вот здесь начинаются свистоперделки с объединением и проверкой на пересечения получившихся множеств
-                            for i in range(len(attrMass[PdNum])):
+                            zatychkaMas = []
+                            for i in range(len(attrUnion[PdNum])):
                                 for j in range(len(testMas[PdNum])):
-                                    pass # Вот сюда
+                                    zatychkaMas_2 = attrUnion[PdNum][i].copy()
+                                    for iterKar in range(PdNum):
+                                        zatychkaMas_2[iterKar].update(testMas[PdNum][j][iterKar])
+                                    
+                                    # Здесь нужна проверка на не пересечение элементов
+                                    # И если всё хорошо - добавление
+                                    if self.CheckBorderDelimiterTruth(zatychkaMas_2): # Вот здесь я остановился ----------------------------------------------------------
+                                        zatychkaMas.append(zatychkaMas_2)
+                            attrUnion[PdNum] = zatychkaMas
+                            
+
                             
 
                     #for i in range(1, len(self.ifbzTableValue[classIter][IbIter][attrIter][-1])):
                     #    print(testMas[i])
                     #print()
+        print(attrUnion)
         
         
 #a = MBZ(3)

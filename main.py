@@ -1,15 +1,19 @@
-from MBZ import *
+from DataMining import *
 import xlsxwriter as xls
 
-a = MBZ(3)
+attributeSize = 12
+classSize = 5
+ibSize = 10
+
+a = DataMining(attributeSize)
 a.AttributeGeneration()
-a.ClassGeneration(2)
+a.ClassGeneration(classSize)
 path="data\\"
 name="MBZ.xlsx"
 workbook = xls.Workbook(path + name) # Создать файл
-a.MVD(5)
+a.MVD(ibSize)
 a.ToExcelMBZ(workbook)
 a.ToExcelMVD(workbook)
-a.IfbzBorderDelimiter()
-a.IfbzBorderSummator()
+#a.IfbzBorderDelimiter()
+#a.IfbzBorderSummator()
 workbook.close()

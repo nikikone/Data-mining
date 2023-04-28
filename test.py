@@ -2,11 +2,47 @@ import numpy as np
 import itertools
 #import pandas as pd
 #import xlsxwriter
+import os
+import json
 
-testSlov = set([1, 2, 3])
-testSlov_2 = set([3, 2, 5])
-testSlov_3 = testSlov.union(testSlov_2)
-print(testSlov_3)
+# --------------------------------------
+#import os
+#import json
+#
+##json_data = {}
+#with open('data.json', 'r') as f:
+#    data = f.read()
+#    json_data = json.loads(data)
+#
+#flag = True
+#
+#while flag:
+#    print("1: Сгенерировать МБЗ и МВД")
+#    pass
+# -------------------------------------
+
+#with open('data.json', 'r') as f:
+#    data = f.read()
+#    json_data = json.loads(data)
+# 
+#print(json_data)
+
+
+#json_obj = json.loads('{"attrSize": 3, "classSize": 2, "ibSize": 5}')
+# 
+#with open('data.json', 'w') as f:
+#    json.dump(json_obj, f)
+
+#for _ in range(20):
+#    input("Введите предложение: ")
+#    input("Сотрём: ")
+#    os.system('cls||clear')
+
+
+#testSlov = set([1, 2, 3])
+#testSlov_2 = set([3, 2, 5])
+#testSlov.update(testSlov_2) #union тоже работает, но нужна сторонняя переменная
+#print(testSlov)
 
 
 #mas = [(3, 8), (8, 8), (12, 4), (22, 1), (32, 6), (34, 9)]
