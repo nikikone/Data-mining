@@ -12,8 +12,8 @@ path="data\\"
 name="MBZ.xlsx"
 workbook = xls.Workbook(path + name) # Создать файл
 a.MVD(ibSize)
-#a.ToExcelMBZ(workbook)
-#a.ToExcelMVD(workbook)
-a.IfbzBorderDelimiter()
+a.ToExcelMBZ(workbook)
+a.ToExcelMVD(workbook)
+#a.IfbzBorderDelimiter()
 #a.IfbzBorderSummator()
 workbook.close()
