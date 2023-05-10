@@ -1,20 +1,21 @@
 import numpy as np
 import xlsxwriter as xls
 import itertools
+import copy
 
 RATIO = 1.2
 
 # Границы кол-ва ПД
-LEFT_CHPD_CONSTANT = 3
+LEFT_CHPD_CONSTANT = 1
 RIGHT_CHPD_CONSTANT = 5
 
 # Границы моментов наблюдения
 LEFT_MN_CONSTANT = 1 # 
-RIGHT_MN_CONSTANT = 10 #
+RIGHT_MN_CONSTANT = 3 #
 
 # Границы возможных значений числовых признаков
 LEFT_NUM_CONSTANT = 0
-RIGHT_NUM_CONSTANT = 1000
+RIGHT_NUM_CONSTANT = 100
 
 # Границы кол-ва значений категориальных признаков
 LEFT_SIZE_KATEGORIAL_CONSTANT = 2
@@ -515,8 +516,8 @@ class DataMining:
                                         flag = False
                                         break
                             if flag and (resOut not in result):
-                                if attrIter == 1 and classIter == 0 and IbIter == 0:
-                                    print("---", resOut)
+                                #if attrIter == 1 and classIter == 0 and IbIter == 0:
+                                #    print("---", resOut)
                                 resultValue.append(resOutValue)
                                 result.append(resOut)
                                 resultVGNG.append(resOutVGNG)
@@ -536,6 +537,7 @@ class DataMining:
         self.ifbzTableValue = ifbzTableValue
         self.ifbzTableAttr = ifbzTableAttr
         self.ifbzTableVGNG = ifbzTableVGNG
+
 
         for i in range(self.IbSize):
             print("--"*20, "Периоды")
@@ -559,13 +561,21 @@ class DataMining:
                 if not mas_1.isdisjoint(mas_2):
                     flag = False
                     break
+        #print(massOfCheck, flag)
         return flag
 
     def IfbzBorderSummator(self):
+        classMass = []
+        classMassVGNG = []
+        print("Начало генерации", flush=True)
         for classIter in range(self.classSize):
-            #classMass = []
-            for attrIter in range(1, 2): #(1, 2)
+            print(classIter + 1, "класс", flush=True)
+            attrMas = []
+            attrMasVGNG = []
+            for attrIter in range(self.attributeSize): #(1, 2)
+                print(attrIter + 1, "признак", flush=True)
                 attrUnion = []
+                attrUnionVGNG = []
                 for IbIter in range(0, self.IbSize): # Как вариант можно для ПД = 1 провести операцию вне цикла PdNum, просто объединив границы и значения множеств
                                                   # а для ПД > 1 сделать проверку на получившиеся объединённые множества, пропустив их через новую функцию
                                                   # проверки таковых, но для этого нужно вынести её из функции ifbzBorderDelimiter
@@ -573,30 +583,49 @@ class DataMining:
                                                   # Есть ещё один вариант - Это внаглую объеденить все множества по их номеру ИБ и уже потом, в отдельном цикле
                                                   # проверить на правильность объединения (но тогда массивы раздуются из-за того что некоторые ИБ имеют по
                                                   # несколько ЧПД одинакового размера)
+                    print(IbIter + 1, "история болезни", flush=True)
                     testMas = {i: [] for i in range(1, len(self.ifbzTableValue[classIter][IbIter][attrIter][-1]) + 1)}
+                    testMasVGNG = {i: [] for i in range(1, len(self.ifbzTableValue[classIter][IbIter][attrIter][-1]) + 1)}
                     for PdNum in range(len(self.ifbzTableValue[classIter][IbIter][attrIter])):
                         testMas[len(self.ifbzTableValue[classIter][IbIter][attrIter][PdNum])].append(self.ifbzTableValue[classIter][IbIter][attrIter][PdNum])
+                        testMasVGNG[len(self.ifbzTableValue[classIter][IbIter][attrIter][PdNum])].append(self.ifbzTableVGNG[classIter][IbIter][attrIter][PdNum])
                     if IbIter == 0:
                         attrUnion = testMas
-                        #print(testMas)
+                        attrUnionVGNG = testMasVGNG
+                        #print(testMas, "-----")
                     else:
                         #zatychkaMas = {i: [] for i in range(1, min(len(attrUnion), len(testMas)) + 1)}
                         for PdNum in range(1, min(len(attrUnion), len(testMas)) + 1):
+                            print(PdNum + 1, "период динамики", flush=True)
                             if len(attrUnion[PdNum]) == 0 or len(testMas[PdNum]) == 0:
                                 continue
                             # Вот здесь начинаются свистоперделки с объединением и проверкой на пересечения получившихся множеств
                             zatychkaMas = []
+                            zatychkaMasVGNG = []
                             for i in range(len(attrUnion[PdNum])):
+                                print(i + 1, "из", len(attrUnion[PdNum]), "Признак", attrIter, flush=True)
                                 for j in range(len(testMas[PdNum])):
-                                    zatychkaMas_2 = attrUnion[PdNum][i].copy()
+                                    #print((i) *(len(attrUnion[PdNum])) + j + 1, "из", len(attrUnion[PdNum]) * len(testMas[PdNum]), flush=True)
+                                    zatychkaMas_2 = copy.deepcopy(attrUnion[PdNum][i]) ###
+                                    zatychkaMas_2VGNG = copy.deepcopy(attrUnionVGNG[PdNum][i])
                                     for iterKar in range(PdNum):
                                         zatychkaMas_2[iterKar].update(testMas[PdNum][j][iterKar])
-                                    
+                                        zatychkaMas_2VGNG[iterKar] = (max(max(zatychkaMas_2VGNG[iterKar][0]), max(testMasVGNG[PdNum][j][iterKar])), min(min(zatychkaMas_2VGNG[iterKar]), min(testMasVGNG[PdNum][j][iterKar])))
                                     # Здесь нужна проверка на не пересечение элементов
                                     # И если всё хорошо - добавление
-                                    if self.CheckBorderDelimiterTruth(zatychkaMas_2): # Вот здесь я остановился ----------------------------------------------------------
+                                    if self.CheckBorderDelimiterTruth(zatychkaMas_2):
                                         zatychkaMas.append(zatychkaMas_2)
+                                        zatychkaMasVGNG.append(zatychkaMas_2VGNG)
+                                        #zatychkaMasVGNG.append(max())
+                                        #self.ifbzTableVGNG[classIter][IbIter][attrIter][PdNum]
                             attrUnion[PdNum] = zatychkaMas
+                            attrUnionVGNG[PdNum] = zatychkaMasVGNG
+                            #print("*****")
+                            #print(testMas)
+                            #print("*****")
+                attrMas.append(attrUnion)
+                attrMasVGNG.append(attrUnionVGNG)
+
                             
 
                             
@@ -604,8 +633,22 @@ class DataMining:
                     #for i in range(1, len(self.ifbzTableValue[classIter][IbIter][attrIter][-1])):
                     #    print(testMas[i])
                     #print()
-        print(attrUnion)
-        
+            classMass.append(attrMas)
+            classMassVGNG.append(attrMasVGNG)
+        #print(attrUnion)
+        #print(attrUnionVGNG)
+        print(classMass)
+        print("--------------------------------")
+        #print(classMassVGNG)
+
+    def ToExcelIfbz(self, workbook):
+        worksheet = workbook.add_worksheet('ИФБЗ')
+        Format = workbook.add_format({'align': 'center', 'valign': 'top', 'bg_color': '#FBD4B4', 'border': 1})
+        FormatBold = workbook.add_format({'align': 'center', 'valign': 'top', 'bg_color': '#FBD4B4', 'border': 1, 'bold': True})
+        column = 0
+        worksheet.merge_range(0, column, 0, column + 5, "(ИБ, заболевание, признак, номер ПД, длительность ПД, число МН в ПД)", FormatBold)
+        iterRow = 1
+        historyIter = 1
         
 #a = MBZ(3)
 #a.AttributeGeneration()

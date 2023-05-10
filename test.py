@@ -4,7 +4,7 @@ import itertools
 #import xlsxwriter
 import os
 import json
-
+print(max((1, 2), (4, 5)))
 # --------------------------------------
 #import os
 #import json
