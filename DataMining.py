@@ -642,7 +642,8 @@ class DataMining:
                                     zatychkaMas_2VGNG = copy.deepcopy(attrUnionVGNG[PdNum][i])
                                     for iterKar in range(PdNum):
                                         zatychkaMas_2[iterKar].update(testMas[PdNum][j][iterKar])
-                                        zatychkaMas_2VGNG[iterKar] = (max(zatychkaMas_2VGNG[iterKar][0], testMasVGNG[PdNum][j][iterKar][0]), min(zatychkaMas_2VGNG[iterKar][1], testMasVGNG[PdNum][j][iterKar][1]))
+                                        zatychkaMas_2VGNG[iterKar] = (max(max(zatychkaMas_2VGNG[iterKar]), max(testMasVGNG[PdNum][j][iterKar])), \
+                                                                      min(min(zatychkaMas_2VGNG[iterKar]), min(testMasVGNG[PdNum][j][iterKar])))
                                     # Здесь нужна проверка на не пересечение элементов
                                     # И если всё хорошо - добавление
                                     if self.CheckBorderDelimiterTruth(zatychkaMas_2):
@@ -675,6 +676,34 @@ class DataMining:
         #print("--------------------------------")
         #print(classMassVGNG)
 
+    def ToExcelIFBZ(self, workbook):
+        worksheet = workbook.add_worksheet('ИФБЗ')
+        Format = workbook.add_format({'align': 'center', 'valign': 'top', 'bg_color': '#FBD4B4', 'border': 1})
+        FormatBold = workbook.add_format({'align': 'center', 'valign': 'top', 'bg_color': '#FBD4B4', 'border': 1, 'bold': True})
+        column = 0
+        worksheet.merge_range(0, column, 0, column + 9, "ИФБЗ", FormatBold)
+        iterRow = 1
+        for classIter in range(self.classSize):
+            for IBiter in range(self.IbSize):
+                for attrIter in range(self.attributeSize):
+                    workbook.write(iterRow, column, "Признак " + str(attrIter + 1), Format)
+                    workbook.write(iterRow, column + 1, "ЧПД 1", Format)
+                    workbook.write(iterRow, column + 2, str(self.ifbzTableAttr[classIter][IBiter][attrIter][0]), Format)
+                    iterRow += 1
+                    workbook.write(iterRow, column + 1, "ЧПД 2", Format)
+                    size_itr = 1
+                    for itr in range(1, len(self.ifbzTableAttr[classIter][IBiter][attrIter])):
+                        if len(self.ifbzTableAttr[classIter][IBiter][attrIter][itr]) > size_itr:
+                            size_itr = len(self.ifbzTableAttr[classIter][IBiter][attrIter][itr])
+                            workbook.write(iterRow, column + 1, "ЧПД " + str(size_itr + 1), Format)
+                        workbook.write(iterRow, column + 2, str(self.ifbzTableAttr[classIter][IBiter][attrIter][itr]), Format) #--------------- Вот здесь остановился
+
+        print(self.ifbzTableAttr)
+        print("-------")
+        print(self.ifbzTableValue)
+        print("-------")
+        print(self.ifbzTableVGNG)
+
     def ToExcelMBZvsIFBZ(self, workbook):
         worksheet = workbook.add_worksheet('МБЗ vs ИФБЗ')
         Format = workbook.add_format({'align': 'center', 'valign': 'top', 'bg_color': '#FBD4B4', 'border': 1})
@@ -689,55 +718,49 @@ class DataMining:
                 worksheet.write(iterRow, column + 1, "Признак " + str(attrIter + 1), Format)
                 worksheet.write(iterRow, column + 2, chPD, Format)
                 worksheet.write(iterRow, column + 3, len(self.IfbzSet[classIter][attrIter]), Format)
-                for PDnum in range(len(self.IfbzSet[classIter][attrIter])):
-                    if len(self.IfbzSet[classIter][attrIter][PDnum + 1]) == 0:
-                        continue
-                    for variant in range(len(self.IfbzSet[classIter][attrIter][PDnum + 1])):
-                        for PDiter in range(0, PDnum + 1):
-                            worksheet.write(iterRow, column + 4, PDiter + 1, Format)
-                            
-                            if PDiter < chPD:
-                                if type(self.attributeNormalValues[attrIter]) is tuple:
-                                    left, right = self.classValues[classIter][attrIter][0][PDiter]
-                                    outPutRow = '[' + str(int(left)) + '-' + str(int(right)) + ']'
-                                elif type(self.attributeNormalValues[attrIter]) is list:
-                                    outPutRow = ''
-                                    for i in range(len(self.classValues[classIter][attrIter][0][PDiter])):
-                                        outPutRow += 'значение ' + str(self.classValues[classIter][attrIter][0][PDiter][i]) + ', ' ####
-                                        if (i + 1) % 2 == 0 and i + 1 != len(self.classValues[classIter][attrIter][0][PDiter]):
-                                            outPutRow += '\n'
-                                            #row_len += 15
-                                    outPutRow = outPutRow[:-2]
-                                    #if iterRow + 1 in rowSlov:
-                                    #    worksheet.set_row(iterRow + 1, max(row_len, rowSlov[iterRow + 1]))
-                                    #    rowSlov[iterRow + 1] = max(row_len, rowSlov[iterRow + 1])
-                                    #else:
-                                    #    worksheet.set_row(iterRow + 1, row_len)
-                                elif type(self.attributeNormalValues[attrIter]) is int:
-                                    outPutRow = self.classValues[classIter][attrIter][0][PDiter]
-                                worksheet.write(iterRow, column + 5, outPutRow, Format)
+                PDnum = chPD - 1
+                if len(self.IfbzSet[classIter][attrIter][PDnum + 1]) == 0:
+                    continue
+                for variant in range(len(self.IfbzSet[classIter][attrIter][PDnum + 1])):
+                    for PDiter in range(0, PDnum + 1):
+                        worksheet.write(iterRow, column + 4, PDiter + 1, Format)
+                        
+                        if type(self.attributeNormalValues[attrIter]) is tuple:
+                            left, right = self.classValues[classIter][attrIter][0][PDiter]
+                            outPutRow = '[' + str(int(left)) + '-' + str(int(right)) + ']'
+                        elif type(self.attributeNormalValues[attrIter]) is list:
+                            outPutRow = ''
+                            for i in range(len(self.classValues[classIter][attrIter][0][PDiter])):
+                                outPutRow += 'значение ' + str(self.classValues[classIter][attrIter][0][PDiter][i]) + ', ' ####
+                                if (i + 1) % 2 == 0 and i + 1 != len(self.classValues[classIter][attrIter][0][PDiter]):
+                                    outPutRow += '\n'
+                                    #row_len += 15
+                            outPutRow = outPutRow[:-2]
+                            #if iterRow + 1 in rowSlov:
+                            #    worksheet.set_row(iterRow + 1, max(row_len, rowSlov[iterRow + 1]))
+                            #    rowSlov[iterRow + 1] = max(row_len, rowSlov[iterRow + 1])
+                            #else:
+                            #    worksheet.set_row(iterRow + 1, row_len)
+                        elif type(self.attributeNormalValues[attrIter]) is int:
+                            outPutRow = self.classValues[classIter][attrIter][0][PDiter]
+                        worksheet.write(iterRow, column + 5, outPutRow, Format)
+                        ng_mbz, vg_mbz = self.classValues[classIter][attrIter][1][PDiter]
+                        vg_ifbz, ng_ifbz = self.IfbzVGNG[classIter][attrIter][PDnum + 1][variant][PDiter]
+                        worksheet.write(iterRow, column + 7, str(ng_mbz) +  " - "  + str(ng_ifbz), Format)
+                        worksheet.write(iterRow, column + 8, str(vg_mbz) +  " - "  + str(vg_ifbz), Format)
 
-                                vg_mbz, ng_mbz = self.classValues[classIter][attrIter][1][PDiter]
-                                vg_ifbz, ng_ifbz = self.IfbzVGNG[classIter][attrIter][PDnum + 1][variant][PDiter]
-                                worksheet.write(iterRow, column + 7, str(ng_mbz) +  " - "  + str(ng_ifbz), Format)
-                                worksheet.write(iterRow, column + 8, str(vg_mbz) +  " - "  + str(vg_ifbz), Format)
-                            else:
-                                worksheet.write(iterRow, column + 5, "-", Format)
-                                vg_ifbz, ng_ifbz = self.IfbzVGNG[classIter][attrIter][PDnum + 1][variant][PDiter]
-                                worksheet.write(iterRow, column + 7, str(ng_ifbz), Format)
-                                worksheet.write(iterRow, column + 8, str(vg_ifbz), Format)
-                            if type(self.attributeNormalValues[attrIter]) is tuple:
-                                outPutRow = ', '.join(map(str, list(self.IfbzSet[classIter][attrIter][PDnum + 1][variant][PDiter])))
-                            elif type(self.attributeNormalValues[attrIter]) is list:
-                                outPut = list(self.IfbzSet[classIter][attrIter][PDnum + 1][variant][PDiter])
-                                outPutRow = ""
-                                for key in outPut:
-                                    outPutRow += "значение" + str(key) + ", "
-                                outPutRow = outPutRow[:-2]
-                            else:
-                                outPutRow = list(self.IfbzSet[classIter][attrIter][PDnum + 1][variant][PDiter])[0]
-                            worksheet.write(iterRow, column + 6, outPutRow, Format)
-                            iterRow += 1
+                        if type(self.attributeNormalValues[attrIter]) is tuple:
+                            outPutRow = ', '.join(map(str, list(self.IfbzSet[classIter][attrIter][PDnum + 1][variant][PDiter])))
+                        elif type(self.attributeNormalValues[attrIter]) is list:
+                            outPut = list(self.IfbzSet[classIter][attrIter][PDnum + 1][variant][PDiter])
+                            outPutRow = ""
+                            for key in outPut:
+                                outPutRow += "значение" + str(key) + ", "
+                            outPutRow = outPutRow[:-2]
+                        else:
+                            outPutRow = list(self.IfbzSet[classIter][attrIter][PDnum + 1][variant][PDiter])[0]
+                        worksheet.write(iterRow, column + 6, outPutRow, Format)
+                        iterRow += 1
         
 #a = MBZ(3)
 #a.AttributeGeneration()
