@@ -1,11 +1,11 @@
 from DataMining import *
 import xlsxwriter as xls
 
-attributeSize = 12
+attributeSize = 3
 classSize = 1
-ibSize = 20
+ibSize = 300
 
-a = DataMining(attributeSize, numSatke=0)
+a = DataMining(attributeSize)
 a.AttributeGeneration()
 a.ClassGeneration(classSize)
 path="data\\"
@@ -14,6 +14,7 @@ workbook = xls.Workbook(path + name) # Создать файл
 a.MVD(ibSize)
 a.ToExcelMBZ(workbook)
 a.ToExcelMVD(workbook)
-workbook.close()
 a.IfbzBorderDelimiter()
 a.IfbzBorderSummator()
+a.ToExcelMBZvsIFBZ(workbook)
+workbook.close()

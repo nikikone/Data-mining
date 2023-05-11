@@ -3,26 +3,26 @@ import xlsxwriter as xls
 import itertools
 import copy
 
-RATIO = 1.2
-
+RATIO = 0.20
+RATIO_COUNT = 1
 # Границы кол-ва ПД
-LEFT_CHPD_CONSTANT = 1
-RIGHT_CHPD_CONSTANT = 5
+LEFT_CHPD_CONSTANT = 3
+RIGHT_CHPD_CONSTANT = 3
 
 # Границы моментов наблюдения
 LEFT_MN_CONSTANT = 1 # 
-RIGHT_MN_CONSTANT = 3 #
+RIGHT_MN_CONSTANT = 2 #
 
 # Границы возможных значений числовых признаков
 LEFT_NUM_CONSTANT = 0
-RIGHT_NUM_CONSTANT = 100
+RIGHT_NUM_CONSTANT = 80
 
 # Границы кол-ва значений категориальных признаков
 LEFT_SIZE_KATEGORIAL_CONSTANT = 2
 RIGHT_SIZE_KATEGORIAL_CONSTANT = 10
 
 # Минимальное расстояние между левой и правой границами возможных значений числовых признаков
-MINIMUM_LENGTH_NUM = 60
+MINIMUM_LENGTH_NUM = 20
 
 
 # classValues
@@ -137,8 +137,15 @@ class DataMining:
                                 checkDifference = False
                             else:
                                 checkDifference = True
-                            if checkDifference and (self.attributePossibleValues[numAttribute][1] - self.attributePossibleValues[numAttribute][0]) \
-                                 % (thisPD[1] - thisPD[0]) > RATIO:
+                            if checkDifference and ((self.attributePossibleValues[numAttribute][1] - self.attributePossibleValues[numAttribute][0]) - (thisPD[1] - thisPD[0])) \
+                                 / (self.attributePossibleValues[numAttribute][1] - self.attributePossibleValues[numAttribute][0]) > RATIO and \
+                                    (self.attributePossibleValues[numAttribute][1] - self.attributePossibleValues[numAttribute][0]) \
+                                 % (thisPD[1] - thisPD[0]) > RATIO_COUNT:
+                                
+                                #print(self.attributePossibleValues[numAttribute][1], self.attributePossibleValues[numAttribute][0], "Возможные значения")
+                                #print(thisPD[1], thisPD[0], "Этот период динамики")
+                                #print(((self.attributePossibleValues[numAttribute][1] - self.attributePossibleValues[numAttribute][0]) - (thisPD[1] - thisPD[0])) \
+                                # / (self.attributePossibleValues[numAttribute][1] - self.attributePossibleValues[numAttribute][0]))
                                 break
                         rest[numPD] = thisPD
                     elif type(self.attributePossibleValues[numAttribute]) is list:
@@ -467,6 +474,8 @@ class DataMining:
                         pdMassValue = []
                         pdMassVGNG = []
                         a = itertools.combinations(masK, numOfPd)
+                        counter_a = 0
+                        summ_a = 0
                         for i in a:
                             flag = True
                             resOut = []
@@ -515,7 +524,26 @@ class DataMining:
                                     if not mas_1.isdisjoint(mas_2):
                                         flag = False
                                         break
-                            if flag and (resOut not in result):
+
+                            try:
+                                flag_2 = resOut not in result
+                            except ValueError:
+                                flag_2 = True
+                                for k in result:
+                                    if len(k) != len(resOut):
+                                        continue
+                                    else:
+                                        print(result)
+                                        print(resOut)
+                                    if k == resOut:
+                                        flag_2 = False
+                                        break
+                            if  flag and flag_2:
+                                counter_a += 1
+                                if counter_a == 100:
+                                    summ_a += 100
+                                    print(summ_a, flush=True)
+                                    counter_a = 0
                                 #if attrIter == 1 and classIter == 0 and IbIter == 0:
                                 #    print("---", resOut)
                                 resultValue.append(resOutValue)
@@ -539,16 +567,16 @@ class DataMining:
         self.ifbzTableVGNG = ifbzTableVGNG
 
 
-        for i in range(self.IbSize):
-            print("--"*20, "Периоды")
-            print(self.ifbzTableAttr[0][i][1])
-            print("--"*20, "ЗДП")
-            print(self.ifbzTableValue[0][i][1])
-            print("--"*20, "Длительность периода")
-            print(self.ifbzTableVGNG[0][i][1])
-            print("--"*20, "Моменты наблюдения")
-            print(self.mvdTable[0][i][1])
-            print()
+        #for i in range(self.IbSize):
+        #    print("--"*20, "Периоды")
+        #    print(self.ifbzTableAttr[0][i][1])
+        #    print("--"*20, "ЗДП")
+        #    print(self.ifbzTableValue[0][i][1])
+        #    print("--"*20, "Длительность периода")
+        #    print(self.ifbzTableVGNG[0][i][1])
+        #    print("--"*20, "Моменты наблюдения")
+        #    print(self.mvdTable[0][i][1])
+        #    print()
 
     @staticmethod
     def CheckBorderDelimiterTruth(massOfCheck):
@@ -602,15 +630,19 @@ class DataMining:
                             # Вот здесь начинаются свистоперделки с объединением и проверкой на пересечения получившихся множеств
                             zatychkaMas = []
                             zatychkaMasVGNG = []
+                            counter_i = 0
                             for i in range(len(attrUnion[PdNum])):
-                                print(i + 1, "из", len(attrUnion[PdNum]), "Признак", attrIter, flush=True)
+                                if counter_i == 100:
+                                    print(i + 1, "из", len(attrUnion[PdNum]), "Признак", attrIter, flush=True)
+                                    counter_i = 0
+                                counter_i += 1
                                 for j in range(len(testMas[PdNum])):
                                     #print((i) *(len(attrUnion[PdNum])) + j + 1, "из", len(attrUnion[PdNum]) * len(testMas[PdNum]), flush=True)
                                     zatychkaMas_2 = copy.deepcopy(attrUnion[PdNum][i]) ###
                                     zatychkaMas_2VGNG = copy.deepcopy(attrUnionVGNG[PdNum][i])
                                     for iterKar in range(PdNum):
                                         zatychkaMas_2[iterKar].update(testMas[PdNum][j][iterKar])
-                                        zatychkaMas_2VGNG[iterKar] = (max(max(zatychkaMas_2VGNG[iterKar][0]), max(testMasVGNG[PdNum][j][iterKar])), min(min(zatychkaMas_2VGNG[iterKar]), min(testMasVGNG[PdNum][j][iterKar])))
+                                        zatychkaMas_2VGNG[iterKar] = (max(zatychkaMas_2VGNG[iterKar][0], testMasVGNG[PdNum][j][iterKar][0]), min(zatychkaMas_2VGNG[iterKar][1], testMasVGNG[PdNum][j][iterKar][1]))
                                     # Здесь нужна проверка на не пересечение элементов
                                     # И если всё хорошо - добавление
                                     if self.CheckBorderDelimiterTruth(zatychkaMas_2):
@@ -635,20 +667,77 @@ class DataMining:
                     #print()
             classMass.append(attrMas)
             classMassVGNG.append(attrMasVGNG)
+        self.IfbzSet = classMass
+        self.IfbzVGNG = classMassVGNG
         #print(attrUnion)
         #print(attrUnionVGNG)
-        print(classMass)
-        print("--------------------------------")
+        #print(classMass)
+        #print("--------------------------------")
         #print(classMassVGNG)
 
-    def ToExcelIfbz(self, workbook):
-        worksheet = workbook.add_worksheet('ИФБЗ')
+    def ToExcelMBZvsIFBZ(self, workbook):
+        worksheet = workbook.add_worksheet('МБЗ vs ИФБЗ')
         Format = workbook.add_format({'align': 'center', 'valign': 'top', 'bg_color': '#FBD4B4', 'border': 1})
         FormatBold = workbook.add_format({'align': 'center', 'valign': 'top', 'bg_color': '#FBD4B4', 'border': 1, 'bold': True})
         column = 0
-        worksheet.merge_range(0, column, 0, column + 5, "(ИБ, заболевание, признак, номер ПД, длительность ПД, число МН в ПД)", FormatBold)
+        worksheet.merge_range(0, column, 0, column + 9, "МБЗ vs ИФБЗ (заболевание, признак, ЧПД МБЗ, ЧПД ИФБЗ, ПД, ЗДП МБЗ, ЗДП ИФБЗ, НГ(разница), ВГ(Разница))", FormatBold)
         iterRow = 1
-        historyIter = 1
+        for classIter in range(self.classSize):
+            worksheet.write(iterRow, column, "Заболевание " + str(classIter + 1), Format)
+            for attrIter in range(self.attributeSize):
+                chPD = len(self.classValues[classIter][attrIter][0])
+                worksheet.write(iterRow, column + 1, "Признак " + str(attrIter + 1), Format)
+                worksheet.write(iterRow, column + 2, chPD, Format)
+                worksheet.write(iterRow, column + 3, len(self.IfbzSet[classIter][attrIter]), Format)
+                for PDnum in range(len(self.IfbzSet[classIter][attrIter])):
+                    if len(self.IfbzSet[classIter][attrIter][PDnum + 1]) == 0:
+                        continue
+                    for variant in range(len(self.IfbzSet[classIter][attrIter][PDnum + 1])):
+                        for PDiter in range(0, PDnum + 1):
+                            worksheet.write(iterRow, column + 4, PDiter + 1, Format)
+                            
+                            if PDiter < chPD:
+                                if type(self.attributeNormalValues[attrIter]) is tuple:
+                                    left, right = self.classValues[classIter][attrIter][0][PDiter]
+                                    outPutRow = '[' + str(int(left)) + '-' + str(int(right)) + ']'
+                                elif type(self.attributeNormalValues[attrIter]) is list:
+                                    outPutRow = ''
+                                    for i in range(len(self.classValues[classIter][attrIter][0][PDiter])):
+                                        outPutRow += 'значение ' + str(self.classValues[classIter][attrIter][0][PDiter][i]) + ', ' ####
+                                        if (i + 1) % 2 == 0 and i + 1 != len(self.classValues[classIter][attrIter][0][PDiter]):
+                                            outPutRow += '\n'
+                                            #row_len += 15
+                                    outPutRow = outPutRow[:-2]
+                                    #if iterRow + 1 in rowSlov:
+                                    #    worksheet.set_row(iterRow + 1, max(row_len, rowSlov[iterRow + 1]))
+                                    #    rowSlov[iterRow + 1] = max(row_len, rowSlov[iterRow + 1])
+                                    #else:
+                                    #    worksheet.set_row(iterRow + 1, row_len)
+                                elif type(self.attributeNormalValues[attrIter]) is int:
+                                    outPutRow = self.classValues[classIter][attrIter][0][PDiter]
+                                worksheet.write(iterRow, column + 5, outPutRow, Format)
+
+                                vg_mbz, ng_mbz = self.classValues[classIter][attrIter][1][PDiter]
+                                vg_ifbz, ng_ifbz = self.IfbzVGNG[classIter][attrIter][PDnum + 1][variant][PDiter]
+                                worksheet.write(iterRow, column + 7, str(ng_mbz) +  " - "  + str(ng_ifbz), Format)
+                                worksheet.write(iterRow, column + 8, str(vg_mbz) +  " - "  + str(vg_ifbz), Format)
+                            else:
+                                worksheet.write(iterRow, column + 5, "-", Format)
+                                vg_ifbz, ng_ifbz = self.IfbzVGNG[classIter][attrIter][PDnum + 1][variant][PDiter]
+                                worksheet.write(iterRow, column + 7, str(ng_ifbz), Format)
+                                worksheet.write(iterRow, column + 8, str(vg_ifbz), Format)
+                            if type(self.attributeNormalValues[attrIter]) is tuple:
+                                outPutRow = ', '.join(map(str, list(self.IfbzSet[classIter][attrIter][PDnum + 1][variant][PDiter])))
+                            elif type(self.attributeNormalValues[attrIter]) is list:
+                                outPut = list(self.IfbzSet[classIter][attrIter][PDnum + 1][variant][PDiter])
+                                outPutRow = ""
+                                for key in outPut:
+                                    outPutRow += "значение" + str(key) + ", "
+                                outPutRow = outPutRow[:-2]
+                            else:
+                                outPutRow = list(self.IfbzSet[classIter][attrIter][PDnum + 1][variant][PDiter])[0]
+                            worksheet.write(iterRow, column + 6, outPutRow, Format)
+                            iterRow += 1
         
 #a = MBZ(3)
 #a.AttributeGeneration()
