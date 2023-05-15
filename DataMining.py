@@ -492,6 +492,7 @@ class DataMining:
                                 #minMn = masPD[0][0]
                                 #gran = 0
                                 gran0 = 0
+                                gran1, gran2 = (0, 0)
                                 for iterPD in range(1, len(i)):
                                     if iterPD == 1:
                                         left = 0
@@ -506,9 +507,10 @@ class DataMining:
                                     #maxMn = npMasPD[i[iterPD] - 1, 0]
                                     #gran1 = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
                                     if iterPD == len(i) - 1:
-                                        resOutVGNG.append((npMasPD[i[iterPD] - 1, 0] - gran0, npMasPD[i[iterPD], 0] - gran0))
-                                        gran0 = npMasPD[i[iterPD], 0] - 1
-                                        resOutVGNG.append((masPD[-1][0] - gran0, masPD[-1][0] - gran0))
+                                        resOutVGNG.append((npMasPD[i[iterPD] - 1, 0] - gran1, npMasPD[i[iterPD], 0] - 1 - gran2))
+                                        gran1 = npMasPD[i[iterPD], 0]
+                                        gran2 = npMasPD[i[iterPD] - 1, 0]
+                                        resOutVGNG.append((masPD[-1][0] - gran1, masPD[-1][0] - gran2))
                                         # 1 - й Вариант:
                                         #resOutVGNG.append((maxMn - gran, minMn - gran))
                                         #gran = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
@@ -516,15 +518,17 @@ class DataMining:
                                         #minMn = npMasPD[i[iterPD], 0]
                                         #resOutVGNG.append((maxMn - gran, minMn - gran)) #.append((masPD[-1][-1] - lastMN, masPD[-1][0] - lastMN))
                                     else:
-                                        resOutVGNG.append((npMasPD[i[iterPD] - 1, 0] - gran0, npMasPD[i[iterPD], 0] - gran0))
+                                        resOutVGNG.append((npMasPD[i[iterPD] - 1, 0] - gran0, npMasPD[i[iterPD], 0] - 1 - gran0))
                                         
                                         # 1 - й Вариант:
                                         #resOutVGNG.append((maxMn - gran, minMn - gran))
                                         #lastMN = npMasPD[i[iterPD], 0] - 1
                                         #minMn = npMasPD[i[iterPD], 0]
                                         ##lastMN = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
-                                    
+                                    gran1 = npMasPD[i[iterPD], 0]
+                                    gran2 = npMasPD[i[iterPD] - 1, 0]
                                     #gran = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
+                                    #gran1 = npMasPD[i[iterPD] - 1, 0]
                                     gran0 = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
                                     mas_1 = set(masProv[left:i[iterPD]])
                                     mas_2 = set(masProv[i[iterPD]:right])
@@ -581,16 +585,16 @@ class DataMining:
         self.ifbzTableVGNG = ifbzTableVGNG
 
 
-        for i in range(self.IbSize):
-            print("--"*20, "Периоды")
-            print(self.ifbzTableAttr[0][i][0])
-            print("--"*20, "ЗДП")
-            print(self.ifbzTableValue[0][i][0])
-            print("--"*20, "Длительность периода")
-            print(self.ifbzTableVGNG[0][i][0])
-            print("--"*20, "Моменты наблюдения")
-            print(self.mvdTable[0][i][0])
-            print()
+        #for i in range(self.IbSize):
+        #    print("--"*20, "Периоды")
+        #    print(self.ifbzTableAttr[0][i][0])
+        #    print("--"*20, "ЗДП")
+        #    print(self.ifbzTableValue[0][i][0])
+        #    print("--"*20, "Длительность периода")
+        #    print(self.ifbzTableVGNG[0][i][0])
+        #    print("--"*20, "Моменты наблюдения")
+        #    print(self.mvdTable[0][i][0])
+        #    print()
 
     @staticmethod
     def CheckBorderDelimiterTruth(massOfCheck):
