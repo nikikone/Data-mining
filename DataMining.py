@@ -360,7 +360,7 @@ class DataMining:
                         for MN in range(chMN):
                             valueInPD = self.classValues[classIter][attrIter][0][PD]
                             if type(valueInPD) is tuple:
-                                valueInMN = int(np.random.randint(valueInPD[0], valueInPD[0] + 1))
+                                valueInMN = int(np.random.randint(valueInPD[0], valueInPD[1] + 1))
                             elif type(valueInPD) is list:
                                 indexValueKategorial = int(np.random.randint(0, len(valueInPD)))
                                 valueInMN = valueInPD[indexValueKategorial]
@@ -488,9 +488,10 @@ class DataMining:
                             elif numOfPd >= 2:
                                 left = 0
                                 right = len(masPD)
-                                lastMN = 0
-                                minMn = masPD[0][0]
-                                gran = 0
+                                #lastMN = 0
+                                #minMn = masPD[0][0]
+                                #gran = 0
+                                gran0 = 0
                                 for iterPD in range(1, len(i)):
                                     if iterPD == 1:
                                         left = 0
@@ -501,22 +502,30 @@ class DataMining:
                                         right = len(masPD)
                                     else:
                                         right = i[iterPD + 1]
-                                    l = npMasPD[i[iterPD]]
-                                    maxMn = npMasPD[i[iterPD] - 1, 0]
+                                    #l = npMasPD[i[iterPD]]
+                                    #maxMn = npMasPD[i[iterPD] - 1, 0]
+                                    #gran1 = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
                                     if iterPD == len(i) - 1:
-                                        resOutVGNG.append((maxMn - gran, minMn - gran))
-                                        gran = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
-                                        maxMn = masPD[-1][0]
-                                        minMn = npMasPD[i[iterPD], 0]
-                                        resOutVGNG.append((maxMn - gran, minMn - gran)) #.append((masPD[-1][-1] - lastMN, masPD[-1][0] - lastMN))
+                                        resOutVGNG.append((npMasPD[i[iterPD] - 1, 0] - gran0, npMasPD[i[iterPD], 0] - gran0))
+                                        gran0 = npMasPD[i[iterPD], 0] - 1
+                                        resOutVGNG.append((masPD[-1][0] - gran0, masPD[-1][0] - gran0))
+                                        # 1 - й Вариант:
+                                        #resOutVGNG.append((maxMn - gran, minMn - gran))
+                                        #gran = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
+                                        #maxMn = masPD[-1][0]
+                                        #minMn = npMasPD[i[iterPD], 0]
+                                        #resOutVGNG.append((maxMn - gran, minMn - gran)) #.append((masPD[-1][-1] - lastMN, masPD[-1][0] - lastMN))
                                     else:
-                                        resOutVGNG.append((maxMn - gran, minMn - gran))
-                                        lastMN = npMasPD[i[iterPD], 0] - 1
-                                        minMn = npMasPD[i[iterPD], 0]
-                                        #lastMN = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
+                                        resOutVGNG.append((npMasPD[i[iterPD] - 1, 0] - gran0, npMasPD[i[iterPD], 0] - gran0))
+                                        
+                                        # 1 - й Вариант:
+                                        #resOutVGNG.append((maxMn - gran, minMn - gran))
+                                        #lastMN = npMasPD[i[iterPD], 0] - 1
+                                        #minMn = npMasPD[i[iterPD], 0]
+                                        ##lastMN = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
                                     
-                                    gran = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
-
+                                    #gran = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
+                                    gran0 = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
                                     mas_1 = set(masProv[left:i[iterPD]])
                                     mas_2 = set(masProv[i[iterPD]:right])
                                     #res = "[" + str(npMasPD[i[iterPD] - 1, 0]) + ", " + str(npMasPD[i[iterPD], 0]) + ")"
@@ -647,8 +656,8 @@ class DataMining:
                                     zatychkaMas_2VGNG = copy.deepcopy(attrUnionVGNG[PdNum][i])
                                     for iterKar in range(PdNum):
                                         zatychkaMas_2[iterKar].update(testMas[PdNum][j][iterKar])
-                                        zatychkaMas_2VGNG[iterKar] = (max(max(zatychkaMas_2VGNG[iterKar]), max(testMasVGNG[PdNum][j][iterKar])), \
-                                                                      min(min(zatychkaMas_2VGNG[iterKar]), min(testMasVGNG[PdNum][j][iterKar])))
+                                        zatychkaMas_2VGNG[iterKar] = (max(zatychkaMas_2VGNG[iterKar][0], testMasVGNG[PdNum][j][iterKar][0]), \
+                                                                      min(zatychkaMas_2VGNG[iterKar][1], testMasVGNG[PdNum][j][iterKar][1]))
                                     # Здесь нужна проверка на не пересечение элементов
                                     # И если всё хорошо - добавление
                                     if self.CheckBorderDelimiterTruth(zatychkaMas_2):
