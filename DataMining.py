@@ -6,8 +6,8 @@ import copy
 RATIO = 0.20
 RATIO_COUNT = 1
 # Границы кол-ва ПД
-LEFT_CHPD_CONSTANT = 3
-RIGHT_CHPD_CONSTANT = 3
+LEFT_CHPD_CONSTANT = 5
+RIGHT_CHPD_CONSTANT = 5
 
 # Границы моментов наблюдения
 LEFT_MN_CONSTANT = 1 # 
@@ -360,7 +360,7 @@ class DataMining:
                         for MN in range(chMN):
                             valueInPD = self.classValues[classIter][attrIter][0][PD]
                             if type(valueInPD) is tuple:
-                                valueInMN = int(np.random.randint(*valueInPD))
+                                valueInMN = int(np.random.randint(valueInPD[0], valueInPD[0] + 1))
                             elif type(valueInPD) is list:
                                 indexValueKategorial = int(np.random.randint(0, len(valueInPD)))
                                 valueInMN = valueInPD[indexValueKategorial]
@@ -489,6 +489,8 @@ class DataMining:
                                 left = 0
                                 right = len(masPD)
                                 lastMN = 0
+                                minMn = masPD[0][0]
+                                gran = 0
                                 for iterPD in range(1, len(i)):
                                     if iterPD == 1:
                                         left = 0
@@ -499,18 +501,21 @@ class DataMining:
                                         right = len(masPD)
                                     else:
                                         right = i[iterPD + 1]
-
+                                    l = npMasPD[i[iterPD]]
+                                    maxMn = npMasPD[i[iterPD] - 1, 0]
                                     if iterPD == len(i) - 1:
-                                        resOutVGNG.append((npMasPD[i[iterPD], 0] - lastMN - 1, npMasPD[i[iterPD], 0] - lastMN - 1))
-                                        lastMN = npMasPD[i[iterPD], 0] - 1
-                                        resOutVGNG.append((masPD[-1][0] - lastMN, masPD[-1][0] - lastMN))
+                                        resOutVGNG.append((maxMn - gran, minMn - gran))
+                                        gran = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
+                                        maxMn = masPD[-1][0]
+                                        minMn = npMasPD[i[iterPD], 0]
+                                        resOutVGNG.append((maxMn - gran, minMn - gran)) #.append((masPD[-1][-1] - lastMN, masPD[-1][0] - lastMN))
                                     else:
-                                        if iterPD == 1:
-                                            resOutVGNG.append((npMasPD[i[iterPD], 0] - 1, npMasPD[i[iterPD], 0] - 1))
-                                            lastMN = npMasPD[i[iterPD], 0] - 1
-                                        else:
-                                            resOutVGNG.append((npMasPD[i[iterPD], 0] - 1 - lastMN, npMasPD[i[iterPD], 0] - 1 - lastMN))
-                                            lastMN = npMasPD[i[iterPD], 0] - 1
+                                        resOutVGNG.append((maxMn - gran, minMn - gran))
+                                        lastMN = npMasPD[i[iterPD], 0] - 1
+                                        minMn = npMasPD[i[iterPD], 0]
+                                        #lastMN = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
+                                    
+                                    gran = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
 
                                     mas_1 = set(masProv[left:i[iterPD]])
                                     mas_2 = set(masProv[i[iterPD]:right])
@@ -567,16 +572,16 @@ class DataMining:
         self.ifbzTableVGNG = ifbzTableVGNG
 
 
-        #for i in range(self.IbSize):
-        #    print("--"*20, "Периоды")
-        #    print(self.ifbzTableAttr[0][i][1])
-        #    print("--"*20, "ЗДП")
-        #    print(self.ifbzTableValue[0][i][1])
-        #    print("--"*20, "Длительность периода")
-        #    print(self.ifbzTableVGNG[0][i][1])
-        #    print("--"*20, "Моменты наблюдения")
-        #    print(self.mvdTable[0][i][1])
-        #    print()
+        for i in range(self.IbSize):
+            print("--"*20, "Периоды")
+            print(self.ifbzTableAttr[0][i][0])
+            print("--"*20, "ЗДП")
+            print(self.ifbzTableValue[0][i][0])
+            print("--"*20, "Длительность периода")
+            print(self.ifbzTableVGNG[0][i][0])
+            print("--"*20, "Моменты наблюдения")
+            print(self.mvdTable[0][i][0])
+            print()
 
     @staticmethod
     def CheckBorderDelimiterTruth(massOfCheck):

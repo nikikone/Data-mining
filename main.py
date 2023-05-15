@@ -1,11 +1,11 @@
 from DataMining import *
 import xlsxwriter as xls
 
-attributeSize = 1
+attributeSize = 3
 classSize = 1
-ibSize = 1
+ibSize = 300
 
-a = DataMining(attributeSize, numSatke=0, binStake=0)
+a = DataMining(attributeSize, numSatke=0, katStake=0)
 a.AttributeGeneration()
 a.ClassGeneration(classSize)
 path="data\\"
