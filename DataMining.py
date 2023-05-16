@@ -6,7 +6,7 @@ import copy
 RATIO = 0.20
 RATIO_COUNT = 1
 # Границы кол-ва ПД
-LEFT_CHPD_CONSTANT = 5
+LEFT_CHPD_CONSTANT = 3
 RIGHT_CHPD_CONSTANT = 5
 
 # Границы моментов наблюдения
@@ -469,7 +469,7 @@ class DataMining:
                     result = []
                     resultValue = []
                     resultVGNG = []
-                    for numOfPd in range(1, len(masPD) + 1):
+                    for numOfPd in range(1, RIGHT_CHPD_CONSTANT + 1): #for numOfPd in range(1, len(masPD) + 1):
                         pdMass = []
                         pdMassValue = []
                         pdMassVGNG = []
@@ -486,13 +486,9 @@ class DataMining:
                                 resOutValue.append(set(masProv))
                                 resOutVGNG.append((masPD[-1][0], masPD[-1][0]))
                             elif numOfPd >= 2:
-                                left = 0
-                                right = len(masPD)
-                                #lastMN = 0
-                                #minMn = masPD[0][0]
-                                #gran = 0
+                                #left = 0
+                                #right = len(masPD)
                                 gran0 = 0
-                                gran1, gran2 = (0, 0)
                                 for iterPD in range(1, len(i)):
                                     if iterPD == 1:
                                         left = 0
@@ -503,36 +499,20 @@ class DataMining:
                                         right = len(masPD)
                                     else:
                                         right = i[iterPD + 1]
-                                    #l = npMasPD[i[iterPD]]
-                                    #maxMn = npMasPD[i[iterPD] - 1, 0]
                                     #gran1 = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
                                     if iterPD == len(i) - 1:
-                                        resOutVGNG.append((npMasPD[i[iterPD] - 1, 0] - gran1, npMasPD[i[iterPD], 0] - 1 - gran2))
-                                        gran1 = npMasPD[i[iterPD], 0]
-                                        gran2 = npMasPD[i[iterPD] - 1, 0]
-                                        resOutVGNG.append((masPD[-1][0] - gran1, masPD[-1][0] - gran2))
-                                        # 1 - й Вариант:
-                                        #resOutVGNG.append((maxMn - gran, minMn - gran))
-                                        #gran = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
-                                        #maxMn = masPD[-1][0]
-                                        #minMn = npMasPD[i[iterPD], 0]
-                                        #resOutVGNG.append((maxMn - gran, minMn - gran)) #.append((masPD[-1][-1] - lastMN, masPD[-1][0] - lastMN))
+                                        resOutVGNG.append((npMasPD[i[iterPD] - 1, 0] - gran0, npMasPD[i[iterPD] - 1, 0] - gran0))
+                                        #gran1 = npMasPD[i[iterPD], 0]
+                                        #gran2 = npMasPD[i[iterPD] - 1, 0]
+                                        gran0 = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
+                                        resOutVGNG.append((masPD[-1][0] - gran0, masPD[-1][0] - gran0))
                                     else:
                                         resOutVGNG.append((npMasPD[i[iterPD] - 1, 0] - gran0, npMasPD[i[iterPD], 0] - 1 - gran0))
-                                        
-                                        # 1 - й Вариант:
-                                        #resOutVGNG.append((maxMn - gran, minMn - gran))
-                                        #lastMN = npMasPD[i[iterPD], 0] - 1
-                                        #minMn = npMasPD[i[iterPD], 0]
-                                        ##lastMN = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
-                                    gran1 = npMasPD[i[iterPD], 0]
-                                    gran2 = npMasPD[i[iterPD] - 1, 0]
-                                    #gran = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
-                                    #gran1 = npMasPD[i[iterPD] - 1, 0]
+                                    #gran1 = npMasPD[i[iterPD], 0]
+                                    #gran2 = npMasPD[i[iterPD] - 1, 0]
                                     gran0 = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
                                     mas_1 = set(masProv[left:i[iterPD]])
                                     mas_2 = set(masProv[i[iterPD]:right])
-                                    #res = "[" + str(npMasPD[i[iterPD] - 1, 0]) + ", " + str(npMasPD[i[iterPD], 0]) + ")"
                                     res = (npMasPD[i[iterPD] - 1, 0], npMasPD[i[iterPD], 0])
                                     resOut.append(res)
                                     resOutValue.append(mas_1)
@@ -542,7 +522,6 @@ class DataMining:
                                     if not mas_1.isdisjoint(mas_2):
                                         flag = False
                                         break
-
                             try:
                                 flag_2 = resOut not in result
                             except ValueError:
@@ -562,8 +541,6 @@ class DataMining:
                                     summ_a += 100
                                     print(summ_a, flush=True)
                                     counter_a = 0
-                                #if attrIter == 1 and classIter == 0 and IbIter == 0:
-                                #    print("---", resOut)
                                 resultValue.append(resOutValue)
                                 result.append(resOut)
                                 resultVGNG.append(resOutVGNG)
@@ -638,9 +615,7 @@ class DataMining:
                     if IbIter == 0:
                         attrUnion = testMas
                         attrUnionVGNG = testMasVGNG
-                        #print(testMas, "-----")
                     else:
-                        #zatychkaMas = {i: [] for i in range(1, min(len(attrUnion), len(testMas)) + 1)}
                         for PdNum in range(1, min(len(attrUnion), len(testMas)) + 1):
                             print(PdNum + 1, "период динамики", flush=True)
                             if len(attrUnion[PdNum]) == 0 or len(testMas[PdNum]) == 0:
@@ -655,7 +630,6 @@ class DataMining:
                                     counter_i = 0
                                 counter_i += 1
                                 for j in range(len(testMas[PdNum])):
-                                    #print((i) *(len(attrUnion[PdNum])) + j + 1, "из", len(attrUnion[PdNum]) * len(testMas[PdNum]), flush=True)
                                     zatychkaMas_2 = copy.deepcopy(attrUnion[PdNum][i]) ###
                                     zatychkaMas_2VGNG = copy.deepcopy(attrUnionVGNG[PdNum][i])
                                     for iterKar in range(PdNum):
@@ -667,60 +641,98 @@ class DataMining:
                                     if self.CheckBorderDelimiterTruth(zatychkaMas_2):
                                         zatychkaMas.append(zatychkaMas_2)
                                         zatychkaMasVGNG.append(zatychkaMas_2VGNG)
-                                        #zatychkaMasVGNG.append(max())
-                                        #self.ifbzTableVGNG[classIter][IbIter][attrIter][PdNum]
                             attrUnion[PdNum] = zatychkaMas
                             attrUnionVGNG[PdNum] = zatychkaMasVGNG
-                            #print("*****")
-                            #print(testMas)
-                            #print("*****")
                 attrMas.append(attrUnion)
                 attrMasVGNG.append(attrUnionVGNG)
-
-                            
-
-                            
-
-                    #for i in range(1, len(self.ifbzTableValue[classIter][IbIter][attrIter][-1])):
-                    #    print(testMas[i])
-                    #print()
             classMass.append(attrMas)
             classMassVGNG.append(attrMasVGNG)
         self.IfbzSet = classMass
         self.IfbzVGNG = classMassVGNG
-        #print(attrUnion)
-        #print(attrUnionVGNG)
-        #print(classMass)
-        #print("--------------------------------")
-        #print(classMassVGNG)
 
     def ToExcelIFBZ(self, workbook):
         worksheet = workbook.add_worksheet('ИФБЗ')
         Format = workbook.add_format({'align': 'center', 'valign': 'top', 'bg_color': '#FBD4B4', 'border': 1})
         FormatBold = workbook.add_format({'align': 'center', 'valign': 'top', 'bg_color': '#FBD4B4', 'border': 1, 'bold': True})
         column = 0
-        worksheet.merge_range(0, column, 0, column + 9, "ИФБЗ", FormatBold)
-        iterRow = 1
+        iterRow = 0
         for classIter in range(self.classSize):
-            for IBiter in range(self.IbSize):
-                for attrIter in range(self.attributeSize):
-                    workbook.write(iterRow, column, "Признак " + str(attrIter + 1), Format)
-                    workbook.write(iterRow, column + 1, "ЧПД 1", Format)
-                    workbook.write(iterRow, column + 2, str(self.ifbzTableAttr[classIter][IBiter][attrIter][0]), Format)
-                    iterRow += 1
-                    workbook.write(iterRow, column + 1, "ЧПД 2", Format)
-                    size_itr = 1
-                    for itr in range(1, len(self.ifbzTableAttr[classIter][IBiter][attrIter])):
-                        if len(self.ifbzTableAttr[classIter][IBiter][attrIter][itr]) > size_itr:
-                            size_itr = len(self.ifbzTableAttr[classIter][IBiter][attrIter][itr])
-                            workbook.write(iterRow, column + 1, "ЧПД " + str(size_itr + 1), Format)
-                        workbook.write(iterRow, column + 2, str(self.ifbzTableAttr[classIter][IBiter][attrIter][itr]), Format) #--------------- Вот здесь остановился
+            for attrIter in range(self.attributeSize):
+                worksheet.write(0, column, "Заболевание " + str(classIter + 1), Format)
+                worksheet.write(0, column + 1, "Признак " + str(attrIter + 1), Format)
+                iterRow += 1
+                for IBiter in range(self.IbSize):
+                    rowAttrLen = 0
+                    pdSize = len(self.pdMnValues[classIter][IBiter][attrIter])
+                    mnIter = 0
+                    for PD in range(pdSize):
+                        chMN = self.pdMnValues[classIter][IBiter][attrIter][PD][1]
+                        rowAttrLen += chMN
+                        for MN in range(chMN):
+                            valueInPD = self.classValues[classIter][attrIter][0][PD]
+                            if type(valueInPD) is tuple:
+                                valueInMN = self.mvdTable[classIter][IBiter][attrIter][mnIter][1]
+                                worksheet.write(iterRow, column + 2, valueInMN, Format)
+                            elif type(valueInPD) is list:
+                                worksheet.write(iterRow, column + 2, "значение " + str(self.mvdTable[classIter][IBiter][attrIter][mnIter][1]), Format)
+                            elif type(valueInPD) is int:
+                                worksheet.write(iterRow, column + 2, valueInPD, Format)
+                            mn = self.mvdTable[classIter][IBiter][attrIter][mnIter][0]
+                            worksheet.write(iterRow, column + 1, mn, Format)
+                            mnIter += 1
+                            iterRow += 1
+                    if rowAttrLen != 1:
+                            worksheet.merge_range(iterRow - rowAttrLen, column, iterRow - 1, column, "ИБ " + str(IBiter + 1), Format)
+                    else:
+                        worksheet.write(iterRow - 1, column, "ИБ " + str(IBiter + 1), Format)
 
-        print(self.ifbzTableAttr)
-        print("-------")
-        print(self.ifbzTableValue)
-        print("-------")
-        print(self.ifbzTableVGNG)
+                iterRow = 0
+                column += 5
+                maxIbIter = 0
+                for IBiter in range(self.IbSize):
+                    worksheet.write(iterRow, column, "ИБ " + str(IBiter + 1), Format)
+                    worksheet.write(iterRow, column + 1, "ЧПД 1", FormatBold)
+                    worksheet.write(iterRow, column + 2, int(self.ifbzTableAttr[classIter][IBiter][attrIter][0][0]), Format)
+                    iterRow += 1
+                    ibRowIter = 0
+                    #
+                    predLen = len(self.ifbzTableAttr[classIter][IBiter][attrIter][1])
+                    counterPdLen = 0
+                    for itr in range(1, len(self.ifbzTableAttr[classIter][IBiter][attrIter])):
+                        if len(self.ifbzTableAttr[classIter][IBiter][attrIter][itr]) != predLen:
+                            if counterPdLen != 1:
+                                worksheet.merge_range(iterRow - counterPdLen, column + 1, iterRow - 1, column + 1, "ЧПД " + str(predLen + 1), FormatBold)
+                            else:
+                                worksheet.write(iterRow - 1, column + 1, "ЧПД " + str(predLen + 1), FormatBold)
+                            predLen = len(self.ifbzTableAttr[classIter][IBiter][attrIter][itr])
+                            maxIbIter = max(maxIbIter, predLen + 1)
+                            counterPdLen = 0
+                        counterPdLen += 1
+                        #if len(self.ifbzTableAttr[classIter][IBiter][attrIter][itr]) > size_itr:
+                        #    size_itr = len(self.ifbzTableAttr[classIter][IBiter][attrIter][itr])
+                        #    worksheet.write(iterRow, column + 1, "ЧПД " + str(size_itr + 1), Format)
+                        column_iter = column + 2
+                        for itr_PD in range(0, len(self.ifbzTableAttr[classIter][IBiter][attrIter][itr])):
+                            result = self.ifbzTableAttr[classIter][IBiter][attrIter][itr][itr_PD]
+                            worksheet.write(iterRow, column_iter, "[" + str(result[0]) + "," + str(result[1]) + ")", Format) #--------------- Вот здесь остановился
+                            column_iter += 1
+                        worksheet.write(iterRow, column_iter, int(self.ifbzTableAttr[classIter][IBiter][attrIter][0][0]), Format)
+                        ibRowIter += 1
+                        iterRow += 1
+                    if counterPdLen != 1:
+                        worksheet.merge_range(iterRow - counterPdLen, column + 1, iterRow - 1, column + 1, "ЧПД " + str(predLen + 1), FormatBold)
+                    else:
+                        worksheet.write(iterRow - 1, column + 1, "ЧПД " + str(predLen + 1), FormatBold)
+                    maxIbIter = max(maxIbIter, predLen + 1)
+                    worksheet.merge_range(iterRow - ibRowIter - 1, column, iterRow - 1, column, "ИБ " + str(IBiter + 1), FormatBold)
+                iterRow = 0
+                column += maxIbIter + 5
+
+        #print(self.ifbzTableAttr)
+        #print("-------")
+        #print(self.ifbzTableValue)
+        #print("-------")
+        #print(self.ifbzTableVGNG)
 
     def ToExcelMBZvsIFBZ(self, workbook):
         worksheet = workbook.add_worksheet('МБЗ vs ИФБЗ')
