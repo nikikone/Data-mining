@@ -9,7 +9,7 @@ a = DataMining(attributeSize)
 a.AttributeGeneration()
 a.ClassGeneration(classSize)
 path="" # Путь к папке формата "data\\"
-name="MBZ.xlsx"
+name="MBZ, MVD, IFBZ, MBZ vs IFBZ.xlsx"
 workbook = xls.Workbook(path + name) # Создать файл
 a.MVD(ibSize)
 a.ToExcelMBZ(workbook)
