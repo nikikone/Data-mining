@@ -6,8 +6,8 @@ import copy
 RATIO = 0.20
 RATIO_COUNT = 1
 # Границы кол-ва ПД
-LEFT_CHPD_CONSTANT = 3
-RIGHT_CHPD_CONSTANT = 5
+LEFT_CHPD_CONSTANT = 2
+RIGHT_CHPD_CONSTANT = 4
 
 # Границы моментов наблюдения
 LEFT_MN_CONSTANT = 1 # 
@@ -141,11 +141,6 @@ class DataMining:
                                  / (self.attributePossibleValues[numAttribute][1] - self.attributePossibleValues[numAttribute][0]) > RATIO and \
                                     (self.attributePossibleValues[numAttribute][1] - self.attributePossibleValues[numAttribute][0]) \
                                  % (thisPD[1] - thisPD[0]) > RATIO_COUNT:
-                                
-                                #print(self.attributePossibleValues[numAttribute][1], self.attributePossibleValues[numAttribute][0], "Возможные значения")
-                                #print(thisPD[1], thisPD[0], "Этот период динамики")
-                                #print(((self.attributePossibleValues[numAttribute][1] - self.attributePossibleValues[numAttribute][0]) - (thisPD[1] - thisPD[0])) \
-                                # / (self.attributePossibleValues[numAttribute][1] - self.attributePossibleValues[numAttribute][0]))
                                 break
                         rest[numPD] = thisPD
                     elif type(self.attributePossibleValues[numAttribute]) is list:
@@ -450,44 +445,31 @@ class DataMining:
         worksheet.set_column(8, 8, 15)
 
     def IfbzBorderDelimiter(self):
-        ifbzTableAttr = []
-        ifbzTableValue = []
-        ifbzTableVGNG = []
+        ifbzTableAttr, ifbzTableValue, ifbzTableVGNG  = [], [], []
         for classIter in range(self.classSize):
-            ibMass = []
-            ibMassValue = []
-            ibMassVGNG = []
+            ibMass, ibMassValue, ibMassVGNG = [], [], []
             for IbIter in range(self.IbSize):
-                attrMass = []
-                attrMassValue = []
-                attrMassVGNG = []
+                attrMass, attrMassValue, attrMassVGNG = [], [], []
                 for attrIter in range(self.attributeSize):
                     masPD = self.mvdTable[classIter][IbIter][attrIter]
                     npMasPD = np.array(masPD)
                     masK = [i for i in range(len(masPD))]
                     masProv = npMasPD[:, 1]
-                    result = []
-                    resultValue = []
-                    resultVGNG = []
+                    result, resultValue, resultVGNG = [], [], []
                     for numOfPd in range(1, RIGHT_CHPD_CONSTANT + 1): #for numOfPd in range(1, len(masPD) + 1):
-                        pdMass = []
-                        pdMassValue = []
-                        pdMassVGNG = []
+                        pdMass, pdMassValue, pdMassVGNG = [], [], []
                         a = itertools.combinations(masK, numOfPd)
+
                         counter_a = 0
                         summ_a = 0
                         for i in a:
                             flag = True
-                            resOut = []
-                            resOutValue = []
-                            resOutVGNG = []
+                            resOut, resOutValue, resOutVGNG = [], [], []
                             if numOfPd == 1:
                                 resOut.append(masPD[-1][0])
                                 resOutValue.append(set(masProv))
                                 resOutVGNG.append((masPD[-1][0], masPD[-1][0]))
                             elif numOfPd >= 2:
-                                #left = 0
-                                #right = len(masPD)
                                 gran0 = 0
                                 for iterPD in range(1, len(i)):
                                     if iterPD == 1:
@@ -499,17 +481,12 @@ class DataMining:
                                         right = len(masPD)
                                     else:
                                         right = i[iterPD + 1]
-                                    #gran1 = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
                                     if iterPD == len(i) - 1:
                                         resOutVGNG.append((npMasPD[i[iterPD] - 1, 0] - gran0, npMasPD[i[iterPD] - 1, 0] - gran0))
-                                        #gran1 = npMasPD[i[iterPD], 0]
-                                        #gran2 = npMasPD[i[iterPD] - 1, 0]
                                         gran0 = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
                                         resOutVGNG.append((masPD[-1][0] - gran0, masPD[-1][0] - gran0))
                                     else:
                                         resOutVGNG.append((npMasPD[i[iterPD] - 1, 0] - gran0, npMasPD[i[iterPD], 0] - 1 - gran0))
-                                    #gran1 = npMasPD[i[iterPD], 0]
-                                    #gran2 = npMasPD[i[iterPD] - 1, 0]
                                     gran0 = (npMasPD[i[iterPD] - 1, 0] + npMasPD[i[iterPD], 0]) // 2
                                     mas_1 = set(masProv[left:i[iterPD]])
                                     mas_2 = set(masProv[i[iterPD]:right])
@@ -532,7 +509,7 @@ class DataMining:
                                     else:
                                         print(result)
                                         print(resOut)
-                                    if k == resOut:
+                                    if type(k[0]) == type(resOut[0]) and k == resOut:
                                         flag_2 = False
                                         break
                             if  flag and flag_2:
@@ -561,7 +538,6 @@ class DataMining:
         self.ifbzTableAttr = ifbzTableAttr
         self.ifbzTableVGNG = ifbzTableVGNG
 
-
         #for i in range(self.IbSize):
         #    print("--"*20, "Периоды")
         #    print(self.ifbzTableAttr[0][i][0])
@@ -584,7 +560,6 @@ class DataMining:
                 if not mas_1.isdisjoint(mas_2):
                     flag = False
                     break
-        #print(massOfCheck, flag)
         return flag
 
     def IfbzBorderSummator(self):
@@ -620,7 +595,6 @@ class DataMining:
                             print(PdNum + 1, "период динамики", flush=True)
                             if len(attrUnion[PdNum]) == 0 or len(testMas[PdNum]) == 0:
                                 continue
-                            # Вот здесь начинаются свистоперделки с объединением и проверкой на пересечения получившихся множеств
                             zatychkaMas = []
                             zatychkaMasVGNG = []
                             counter_i = 0
@@ -654,10 +628,14 @@ class DataMining:
         worksheet = workbook.add_worksheet('ИФБЗ')
         Format = workbook.add_format({'align': 'center', 'valign': 'top', 'bg_color': '#FBD4B4', 'border': 1})
         FormatBold = workbook.add_format({'align': 'center', 'valign': 'top', 'bg_color': '#FBD4B4', 'border': 1, 'bold': True})
+        FormatPartition = workbook.add_format({'align': 'center', 'valign': 'top', 'bg_color': 'red', 'border': 1, 'bold': True})
+        FormatPartitionGray = workbook.add_format({'align': 'center', 'valign': 'top', 'bg_color': 'gray', 'border': 1, 'bold': True})
+        FormatPartitionYellow = workbook.add_format({'align': 'center', 'valign': 'top', 'bg_color': 'yellow', 'border': 1, 'bold': True})
         column = 0
         iterRow = 0
         for classIter in range(self.classSize):
             for attrIter in range(self.attributeSize):
+                worksheet.set_column(column, column + 2, 15)
                 worksheet.write(0, column, "Заболевание " + str(classIter + 1), Format)
                 worksheet.write(0, column + 1, "Признак " + str(attrIter + 1), Format)
                 iterRow += 1
@@ -687,9 +665,9 @@ class DataMining:
                         worksheet.write(iterRow - 1, column, "ИБ " + str(IBiter + 1), Format)
 
                 iterRow = 0
-                column += 5
+                column += 4
                 maxIbIter = 0
-                for IBiter in range(self.IbSize):
+                for IBiter in range(len(self.ifbzTableAttr[classIter])):
                     worksheet.write(iterRow, column, "ИБ " + str(IBiter + 1), Format)
                     worksheet.write(iterRow, column + 1, "ЧПД 1", FormatBold)
                     worksheet.write(iterRow, column + 2, int(self.ifbzTableAttr[classIter][IBiter][attrIter][0][0]), Format)
@@ -708,9 +686,6 @@ class DataMining:
                             maxIbIter = max(maxIbIter, predLen + 1)
                             counterPdLen = 0
                         counterPdLen += 1
-                        #if len(self.ifbzTableAttr[classIter][IBiter][attrIter][itr]) > size_itr:
-                        #    size_itr = len(self.ifbzTableAttr[classIter][IBiter][attrIter][itr])
-                        #    worksheet.write(iterRow, column + 1, "ЧПД " + str(size_itr + 1), Format)
                         column_iter = column + 2
                         for itr_PD in range(0, len(self.ifbzTableAttr[classIter][IBiter][attrIter][itr])):
                             result = self.ifbzTableAttr[classIter][IBiter][attrIter][itr][itr_PD]
@@ -726,32 +701,98 @@ class DataMining:
                     maxIbIter = max(maxIbIter, predLen + 1)
                     worksheet.merge_range(iterRow - ibRowIter - 1, column, iterRow - 1, column, "ИБ " + str(IBiter + 1), FormatBold)
                 iterRow = 0
-                column += maxIbIter + 5
+                column += maxIbIter + 3
 
-        #print(self.ifbzTableAttr)
-        #print("-------")
-        #print(self.ifbzTableValue)
-        #print("-------")
-        #print(self.ifbzTableVGNG)
+                iterIfbzSet = self.IfbzSet[classIter][attrIter]
+                iterIfbzVGNG = self.IfbzVGNG[classIter][attrIter]
+                worksheet.write(iterRow, column, "ЧПД", Format)
+                worksheet.write(iterRow, column + 1, "ПД", Format)
+                worksheet.write(iterRow, column + 2, "Значения", Format)
+                worksheet.write(iterRow, column + 3, "ВГ", Format)
+                worksheet.write(iterRow, column + 4, "НГ", Format)
+                iterRow += 1
+                flag = True
+                
+                for PD in range(1, len(iterIfbzSet) + 1):
+                    if PD != 1 and flag:
+                        worksheet.merge_range(iterRow, column, iterRow, column + 4, "", FormatPartitionGray)
+                        flag = False
+                        iterRow += 1
+                    for variant in range(len(iterIfbzSet[PD])):
+                        flag = True
+                        if variant != 0:
+                            worksheet.merge_range(iterRow, column, iterRow, column + 4, "", FormatPartition)
+                            iterRow += 1
+                        worksheet.write(iterRow, column, "ЧПД " + str(PD), Format)
+                        variantCounter = iterRow
+                        for PDiter in range(len(iterIfbzSet[PD][variant])):
+                            worksheet.write(iterRow, column + 1, PDiter + 1, Format)
+                            ##
+                            if type(self.attributeNormalValues[attrIter]) is tuple:
+                                resOut = ', '.join(map(str, list(iterIfbzSet[PD][variant][PDiter])))
+                            elif type(self.attributeNormalValues[attrIter]) is list:
+                                resOut = ''
+                                masIfbz = list(iterIfbzSet[PD][variant][PDiter])
+                                for i in range(len(masIfbz)):
+                                    resOut += 'значение ' + str(masIfbz[i]) + ', ' ####
+                                resOut = resOut[:-2]
+                            elif type(self.attributeNormalValues[attrIter]) is int:
+                                resOut = self.classValues[classIter][attrIter][0][PDiter]
+            
+                            worksheet.write(iterRow, column + 2, resOut, Format)
+                            worksheet.write(iterRow, column + 3, iterIfbzVGNG[PD][variant][PDiter][0], Format)
+                            worksheet.write(iterRow, column + 4, iterIfbzVGNG[PD][variant][PDiter][1], Format)
+                            iterRow += 1
+                        worksheet.merge_range(variantCounter, column, iterRow - 1, column, "ЧПД " + str(PD), Format) 
+                iterRow = 0
+                column += 8
+
+                ##################
+                worksheet.set_column(column - 2, column - 2, 0.5)
+                worksheet.set_column(column - 6, column - 6, 25)
+                worksheet.merge_range(0, column - 2, 1000, column - 2, "", FormatPartitionYellow)
+
 
     def ToExcelMBZvsIFBZ(self, workbook):
         worksheet = workbook.add_worksheet('МБЗ vs ИФБЗ')
         Format = workbook.add_format({'align': 'center', 'valign': 'top', 'bg_color': '#FBD4B4', 'border': 1})
         FormatBold = workbook.add_format({'align': 'center', 'valign': 'top', 'bg_color': '#FBD4B4', 'border': 1, 'bold': True})
+        FormatPartition = workbook.add_format({'align': 'center', 'valign': 'top', 'bg_color': 'red', 'border': 1, 'bold': True})
         column = 0
-        worksheet.merge_range(0, column, 0, column + 9, "МБЗ vs ИФБЗ (заболевание, признак, ЧПД МБЗ, ЧПД ИФБЗ, ПД, ЗДП МБЗ, ЗДП ИФБЗ, НГ(разница), ВГ(Разница))", FormatBold)
+        worksheet.write(0, column, "Заболевание", Format)
+        worksheet.write(0, column + 1, "Признак", Format)
+        worksheet.write(0, column + 2, "Количество правильных ЧПД", Format)
+        worksheet.write(0, column + 3, "ЧПД", Format)
+        worksheet.write(0, column + 4, "ПД", Format)
+        worksheet.write(0, column + 5, "ЗДП МБЗ", Format)
+        worksheet.write(0, column + 6, "ЗДП ИФБЗ", Format)
+        worksheet.write(0, column + 7, "%", Format)
+        worksheet.write(0, column + 8, "НГ", Format)
+        worksheet.write(0, column + 9, "ВГ", Format)
         iterRow = 1
         for classIter in range(self.classSize):
             worksheet.write(iterRow, column, "Заболевание " + str(classIter + 1), Format)
+            rowClassCounter = 0
             for attrIter in range(self.attributeSize):
+                counterAllVariant = 0
                 chPD = len(self.classValues[classIter][attrIter][0])
                 worksheet.write(iterRow, column + 1, "Признак " + str(attrIter + 1), Format)
-                worksheet.write(iterRow, column + 2, chPD, Format)
-                worksheet.write(iterRow, column + 3, len(self.IfbzSet[classIter][attrIter]), Format)
+
+                worksheet.write(iterRow, column + 3, chPD, Format)
+                rowAttrCounter = 0
                 PDnum = chPD - 1
                 if len(self.IfbzSet[classIter][attrIter][PDnum + 1]) == 0:
                     continue
+                
+                for PD in range(1, chPD + 1):
+                    counterAllVariant += len(self.IfbzSet[classIter][attrIter][PD])
+                counterTrueVariant = len(self.IfbzSet[classIter][attrIter][chPD])
                 for variant in range(len(self.IfbzSet[classIter][attrIter][PDnum + 1])):
+                    if variant != 0:
+                        worksheet.merge_range(iterRow, column + 4, iterRow, column + 9, "", FormatPartition)
+                        iterRow += 1
+                        rowAttrCounter += 1
+                        
                     for PDiter in range(0, PDnum + 1):
                         worksheet.write(iterRow, column + 4, PDiter + 1, Format)
                         
@@ -762,40 +803,42 @@ class DataMining:
                             outPutRow = ''
                             for i in range(len(self.classValues[classIter][attrIter][0][PDiter])):
                                 outPutRow += 'значение ' + str(self.classValues[classIter][attrIter][0][PDiter][i]) + ', ' ####
-                                if (i + 1) % 2 == 0 and i + 1 != len(self.classValues[classIter][attrIter][0][PDiter]):
-                                    outPutRow += '\n'
-                                    #row_len += 15
                             outPutRow = outPutRow[:-2]
-                            #if iterRow + 1 in rowSlov:
-                            #    worksheet.set_row(iterRow + 1, max(row_len, rowSlov[iterRow + 1]))
-                            #    rowSlov[iterRow + 1] = max(row_len, rowSlov[iterRow + 1])
-                            #else:
-                            #    worksheet.set_row(iterRow + 1, row_len)
                         elif type(self.attributeNormalValues[attrIter]) is int:
                             outPutRow = self.classValues[classIter][attrIter][0][PDiter]
                         worksheet.write(iterRow, column + 5, outPutRow, Format)
                         ng_mbz, vg_mbz = self.classValues[classIter][attrIter][1][PDiter]
                         vg_ifbz, ng_ifbz = self.IfbzVGNG[classIter][attrIter][PDnum + 1][variant][PDiter]
-                        worksheet.write(iterRow, column + 7, str(ng_mbz) +  " - "  + str(ng_ifbz), Format)
-                        worksheet.write(iterRow, column + 8, str(vg_mbz) +  " - "  + str(vg_ifbz), Format)
-
+                        worksheet.write(iterRow, column + 8, ng_mbz - ng_ifbz, Format)
+                        worksheet.write(iterRow, column + 9, vg_mbz - vg_ifbz, Format)
                         if type(self.attributeNormalValues[attrIter]) is tuple:
-                            outPutRow = ', '.join(map(str, list(self.IfbzSet[classIter][attrIter][PDnum + 1][variant][PDiter])))
+                            lstOut = list(self.IfbzSet[classIter][attrIter][PDnum + 1][variant][PDiter])
+                            outPutRow = ', '.join(map(str, lstOut))
+                            outPutRowCounterMask = np.sum(np.logical_and(left <= np.array(lstOut, int), np.array(lstOut, int) <= right)) * 100 // (right - left + 1)
                         elif type(self.attributeNormalValues[attrIter]) is list:
                             outPut = list(self.IfbzSet[classIter][attrIter][PDnum + 1][variant][PDiter])
                             outPutRow = ""
+                            outPutRowCounterMask = len(list(set(self.classValues[classIter][attrIter][0][PDiter]).intersection(self.IfbzSet[classIter][attrIter][PDnum + 1][variant][PDiter]))) * 100
+                            outPutRowCounterMask //= len(self.classValues[classIter][attrIter][0][PDiter])
+
                             for key in outPut:
                                 outPutRow += "значение" + str(key) + ", "
                             outPutRow = outPutRow[:-2]
                         else:
                             outPutRow = list(self.IfbzSet[classIter][attrIter][PDnum + 1][variant][PDiter])[0]
+                            if list(self.IfbzSet[classIter][attrIter][PDnum + 1][variant][PDiter])[0] == self.classValues[classIter][attrIter][0][PDiter]:
+                                outPutRowCounterMask = 100
+                            else:
+                                outPutRowCounterMask = 0
                         worksheet.write(iterRow, column + 6, outPutRow, Format)
+
+                        worksheet.write(iterRow, column + 7, outPutRowCounterMask, Format)
                         iterRow += 1
-        
-#a = MBZ(3)
-#a.AttributeGeneration()
-#a.ClassGeneration(1)
-##print(a.classValues)
-##print(a.attributePossibleValues)
-#a.ToExcel()
-#print(a.attributeNormalValues)
+                        rowAttrCounter += 1
+                rowClassCounter += rowAttrCounter
+                worksheet.merge_range(iterRow - rowAttrCounter, column + 1, iterRow - 1, column + 1, "Признак " + str(attrIter + 1), FormatBold)
+                worksheet.merge_range(iterRow - rowAttrCounter, column + 3, iterRow - 1, column + 3, chPD, FormatBold)
+                worksheet.merge_range(iterRow - rowAttrCounter, column + 2, iterRow - 1, column + 2, str(counterTrueVariant) + "|" + str(counterAllVariant), FormatBold)
+
+            worksheet.merge_range(iterRow - rowClassCounter, column, iterRow - 1, column, "Заболевание " + str(classIter + 1), FormatBold)
+

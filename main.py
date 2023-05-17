@@ -2,13 +2,13 @@ from DataMining import *
 import xlsxwriter as xls
 
 attributeSize = 3
-classSize = 1
-ibSize = 300
+classSize = 2
+ibSize = 50
 
 a = DataMining(attributeSize)
 a.AttributeGeneration()
 a.ClassGeneration(classSize)
-path="data\\"
+path="" # Путь к папке формата "data\\"
 name="MBZ.xlsx"
 workbook = xls.Workbook(path + name) # Создать файл
 a.MVD(ibSize)

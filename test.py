@@ -1,8 +1,16 @@
+import numpy as np
 #import itertools
 #import pandas as pd
 #import xlsxwriter
 #import os
 #import json
+mas_1 = set([1, 2, 3])
+mas_2 = set([2, 3, 4])
+print(mas_1.intersection(mas_2))
+
+#mas_1 = np.array([1, 2, 3], int)
+#mask = np.logical_and(mas_1 > 0, mas_1 < 4)
+#print(np.sum(mask))
 #print(max((1, 2), (4, 5)))
 # --------------------------------------
 #import os

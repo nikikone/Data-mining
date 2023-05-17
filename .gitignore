@@ -1,3 +1,4 @@
 /Lore
 /Data
 /__pycache__
+*.json
