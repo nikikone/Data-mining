@@ -4,7 +4,8 @@ import xlsxwriter as xls
 attributeSize = 3
 classSize = 2
 ibSize = 50
-
+# add new changes to file
+exit(0)
 a = DataMining(attributeSize)
 a.AttributeGeneration()
 a.ClassGeneration(classSize)
