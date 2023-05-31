@@ -3,7 +3,7 @@ import xlsxwriter as xls
 import itertools
 import copy
 
-RATIO = 1000000
+RATIO = 0.2
 RATIO_COUNT = 1
 # Границы кол-ва ПД
 LEFT_CHPD_CONSTANT = 2
