@@ -3,11 +3,11 @@ import xlsxwriter as xls
 import itertools
 import copy
 
-RATIO = 0.2
-RATIO_COUNT = 1
-# Границы кол-ва ПД
-LEFT_CHPD_CONSTANT = 2
-RIGHT_CHPD_CONSTANT = 4
+RATIO = 0.2 --------------------------------
+RATIO_COUNT = 1 ----------------------------------
+# Границы кол-ва ПД ----------------------------------
+LEFT_CHPD_CONSTANT = 2 --------------------------------------
+RIGHT_CHPD_CONSTANT = 4 -----------------------------------------
 
 # Границы моментов наблюдения
 LEFT_MN_CONSTANT = 1 # 
